@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 NEXT_PUBLIC_APP_URL = "https://adoptions.happyfactory.app"
+EMAIL_FROM = "Happy Factory <admin@happyfactory.app>"
 
 [[routes]]
 pattern = "adoptions.happyfactory.app"
@@ -17,6 +18,7 @@ name = "happy-adoptions-dev"
 [env.dev.vars]
 NEXT_PUBLIC_APP_URL = "https://adoptions-dev.happyfactory.app"
 NEXT_PUBLIC_ENABLE_TEST_LOGIN = "true"
+EMAIL_FROM = "Happy Factory <admin@happyfactory.app>"
 
 [[env.dev.routes]]
 pattern = "adoptions-dev.happyfactory.app"
