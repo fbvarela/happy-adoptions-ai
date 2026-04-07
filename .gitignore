@@ -40,3 +40,10 @@ next-env.d.ts
 # ide
 .idea/
 .vscode/
+
+# lock files
+package-lock.json
+
+# cloudflare
+.open-next/
+.wrangler/
