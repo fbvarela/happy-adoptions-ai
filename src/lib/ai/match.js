@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { CohereClientV2 } from 'cohere-ai';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new CohereClientV2({ token: process.env.COHERE_API_KEY });
 
 /**
  * Given an adopter profile and a list of dogs, returns ranked matches with
@@ -16,13 +16,13 @@ export async function matchDogsToAdopter(profile, dogs = []) {
     ? buildIdealModePrompt(profile)
     : buildMatchPrompt(profile, dogs);
 
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 2048,
+  const response = await client.chat({
+    model: 'command-a-03-2025',
     messages: [{ role: 'user', content: prompt }],
+    maxTokens: 2048,
   });
 
-  const text = message.content[0].text;
+  const text = response.message?.content?.[0]?.text || '';
   return parseResponse(text, idealMode);
 }
 
@@ -117,12 +117,12 @@ function parseResponse(text, idealMode) {
  * describing what kind of home this dog needs.
  */
 export async function assessDogForAdoption(dogProfile) {
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1536,
+  const response = await client.chat({
+    model: 'command-a-03-2025',
     messages: [{ role: 'user', content: buildAssessmentPrompt(dogProfile) }],
+    maxTokens: 1536,
   });
-  return parseAssessmentResponse(message.content[0].text);
+  return parseAssessmentResponse(response.message?.content?.[0]?.text || '');
 }
 
 function buildAssessmentPrompt(dog) {
@@ -170,12 +170,12 @@ function parseAssessmentResponse(text) {
  * Given an adopter profile, returns volunteer role suggestions ranked by fit.
  */
 export async function matchVolunteerOpportunities(profile) {
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
+  const response = await client.chat({
+    model: 'command-a-03-2025',
     messages: [{ role: 'user', content: buildVolunteerPrompt(profile) }],
+    maxTokens: 1024,
   });
-  return parseVolunteerResponse(message.content[0].text);
+  return parseVolunteerResponse(response.message?.content?.[0]?.text || '');
 }
 
 function buildVolunteerPrompt(profile) {
