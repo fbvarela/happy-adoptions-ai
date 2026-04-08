@@ -23,7 +23,7 @@ const config: OpenNextConfig = {
       queue: "dummy",
     },
   },
-  buildCommand: "npx next build --webpack",
+  buildCommand: "DATABASE_URL=postgresql://dummy:dummy@localhost/dummy SESSION_SECRET=dummy-secret-for-build-only-32chars npx next build --webpack",
 };
 
 export default config;
