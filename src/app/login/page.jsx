@@ -1,16 +1,41 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useRole } from '@/context/RoleContext';
+
+const enableTestLogin = process.env.NEXT_PUBLIC_ENABLE_TEST_LOGIN === 'true';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | sent | error
   const [errorMsg, setErrorMsg] = useState('');
   const searchParams = useSearchParams();
+  const router = useRouter();
   const authError = searchParams.get('error');
   const { role, setRole } = useRole();
+
+  const handleTestLogin = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setStatus('loading');
+    const form = e.currentTarget;
+    const testEmail = form.elements.namedItem('testEmail').value;
+    const testPassword = form.elements.namedItem('testPassword').value;
+    try {
+      const res = await fetch('/api/auth/test-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: testEmail, password: testPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Test login failed.');
+      router.push('/dashboard');
+    } catch (err) {
+      setErrorMsg(err.message);
+      setStatus('error');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,6 +50,10 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send link');
+      if (data.devRedirect) {
+        router.push(data.devRedirect);
+        return;
+      }
       setStatus('sent');
     } catch (err) {
       setErrorMsg(err.message);
@@ -66,6 +95,33 @@ function LoginForm() {
             </div>
           )}
 
+          {enableTestLogin && (
+            <form onSubmit={handleTestLogin} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--line)' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginBottom: 12 }}>
+                🛠 Test login (dev only)
+              </p>
+              <div className="field" style={{ marginBottom: 12 }}>
+                <label className="input-label" htmlFor="testEmail">Email</label>
+                <input id="testEmail" name="testEmail" type="email" className="input" required />
+              </div>
+              <div className="field" style={{ marginBottom: 12 }}>
+                <label className="input-label" htmlFor="testPassword">Password</label>
+                <input id="testPassword" name="testPassword" type="password" className="input" required />
+              </div>
+              {status === 'error' && (
+                <p style={{ color: 'var(--clay)', fontSize: '0.85rem', marginBottom: 12 }}>{errorMsg}</p>
+              )}
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={status === 'loading'}
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                {status === 'loading' ? 'Signing in...' : 'Sign in (test user)'}
+              </button>
+            </form>
+          )}
+
           {status === 'sent' ? (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📬</div>
@@ -88,10 +144,10 @@ function LoginForm() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
-                  autoFocus
+                  autoFocus={!enableTestLogin}
                 />
               </div>
-              {status === 'error' && (
+              {status === 'error' && !enableTestLogin && (
                 <p style={{ color: 'var(--clay)', fontSize: '0.85rem', marginBottom: 12 }}>{errorMsg}</p>
               )}
               <button
