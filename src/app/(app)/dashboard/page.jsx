@@ -6,6 +6,44 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 
+const FORMAT_VALUE = {
+  house: 'House with yard', house_no_yard: 'House without yard', apartment: 'Apartment', condo: 'Condo / townhouse',
+  large_yard: 'Large fenced yard', small_yard: 'Small yard or garden', balcony: 'Balcony only', none: 'No outdoor space',
+  sedentary: 'Low activity', moderate: 'Moderate — daily walks', active: 'Active — runs, hikes', very_active: 'Very active — outdoors daily',
+  home_all_day: 'Work from home', part_time: 'Out part-time', full_time_out: 'Out full-time', frequent_travel: 'Frequent traveler',
+  basic: 'Basic commands', experienced: 'Experienced trainer',
+  small: 'Small (under 10kg)', medium: 'Medium (10–25kg)', large: 'Large (25kg+)',
+  puppy: 'Puppy (under 1 year)', young: 'Young (1–3 years)', adult: 'Adult (3–8 years)', senior: 'Senior (8+ years)',
+  low: 'Low energy', high: 'High energy',
+};
+
+function formatValue(val) {
+  if (val === true) return 'Yes';
+  if (val === false) return 'No';
+  if (Array.isArray(val)) return val.join(', ');
+  if (typeof val === 'number') return String(val);
+  return FORMAT_VALUE[val] || val || '—';
+}
+
+function ProfileSection({ title, data, labels }) {
+  if (!data || Object.keys(data).length === 0) return null;
+  const entries = Object.entries(labels).filter(([key]) => data[key] !== undefined && data[key] !== '' && data[key] !== null);
+  if (entries.length === 0) return null;
+  return (
+    <div className="card">
+      <div className="card-title">{title}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginTop: 8 }}>
+        {entries.map(([key, label]) => (
+          <div key={key}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</span>
+            <div style={{ fontSize: '0.9rem', color: 'var(--bark)', fontWeight: 500 }}>{formatValue(data[key])}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const { showToast } = useApp();
@@ -75,15 +113,26 @@ export default function DashboardPage() {
         {activeTab === 'profile' && (
           <div>
             {profile?.profile_data ? (
-              <div className="card" style={{ marginBottom: 16 }}>
-                <div className="card-title">Saved adopter profile</div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>
-                  This is the profile we use to find your matches.
-                </p>
-                <pre style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'var(--cream)', padding: 12, borderRadius: 'var(--radius-sm)', overflow: 'auto' }}>
-                  {JSON.stringify(profile.profile_data, null, 2)}
-                </pre>
-                <Link href="/quiz" className="btn btn-ghost btn-sm" style={{ marginTop: 12 }}>Retake quiz to update</Link>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+                <ProfileSection title="Contact" data={profile.profile_data.contact} labels={{
+                  name: 'Name', email: 'Email', location: 'Location', notes: 'Notes',
+                }} />
+                <ProfileSection title="Household" data={profile.profile_data.household} labels={{
+                  hasKids: 'Children at home', kidsAges: 'Kids ages', hasDogs: 'Other dogs', dogCount: 'Number of dogs', hasCats: 'Cats at home', otherPets: 'Other pets',
+                }} />
+                <ProfileSection title="Housing" data={profile.profile_data.housing} labels={{
+                  type: 'Housing type', outdoorSpace: 'Outdoor space', hasAllergies: 'Dog allergies', rentalRestrictions: 'Rental restrictions', rentalDetails: 'Restriction details',
+                }} />
+                <ProfileSection title="Lifestyle" data={profile.profile_data.lifestyle} labels={{
+                  activityLevel: 'Activity level', workSchedule: 'Work schedule', aloneTimeHours: 'Hours alone per day', hasDogWalker: 'Dog walker / daycare',
+                }} />
+                <ProfileSection title="Experience" data={profile.profile_data.experience} labels={{
+                  firstTimeOwner: 'First-time owner', previousDogs: 'Previous dogs', trainingExperience: 'Training experience', openToSpecialNeeds: 'Open to special needs',
+                }} />
+                <ProfileSection title="Preferences" data={profile.profile_data.preferences} labels={{
+                  size: 'Preferred size', age: 'Preferred age', energyLevel: 'Energy level', mustBeGoodWithKids: 'Must be good with kids', mustBeGoodWithDogs: 'Must be good with dogs', mustBeGoodWithCats: 'Must be good with cats', mustBeTrained: 'Must be trained',
+                }} />
+                <Link href="/quiz" className="btn btn-ghost btn-sm">Retake quiz to update</Link>
               </div>
             ) : (
               <div className="card" style={{ textAlign: 'center', background: 'var(--cream)' }}>

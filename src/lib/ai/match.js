@@ -38,9 +38,10 @@ ${JSON.stringify(dogs.map(d => ({
   name: d.name,
   breed: d.breed,
   sex: d.sex,
-  ageMonths: d.age_months,
+  ageApprox: d.age_months,
   weight: d.weight,
   color: d.color,
+  origin: d.origin,
   temperament: d.temperament,
   isVaccinated: d.is_vaccinated,
   isSterilized: d.is_sterilized,
@@ -55,6 +56,7 @@ Score each dog from 0–100 for compatibility with this adopter. Consider:
 - Activity level and lifestyle
 - Dog experience and training ability
 - Adopter preferences (size, age, energy)
+- Dog's origin (street dogs may need more patience, shelter dogs may have unknown history)
 - Any deal-breakers
 
 Return ONLY valid JSON in this exact format:
@@ -136,7 +138,8 @@ Analyse this dog and generate a detailed ideal adopter profile describing:
 1. What type of home and lifestyle suits this dog best
 2. Any deal-breakers (e.g. no small kids, needs garden)
 3. Experience level required
-4. Tips for the volunteer when screening adopters
+4. Consider the dog's origin (street/shelter/previous owner) — street dogs may need patience with socialisation, shelter dogs may have unknown history, dogs from previous owners may adapt faster
+5. Tips for the volunteer when screening adopters
 
 Return ONLY valid JSON:
 {
