@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db';
 import { requireAuth } from '@/lib/auth/session';
+import { describeDogPhotos } from '@/lib/ai/vision';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -55,5 +56,17 @@ export async function POST(request) {
     RETURNING *
   `;
 
-  return Response.json(rows[0], { status: 201 });
+  const dog = rows[0];
+
+  // Generate photo descriptions in the background (don't block response)
+  if (photos?.length > 0 && process.env.GROQ_API_KEY) {
+    describeDogPhotos(photos).then(descriptions => {
+      if (descriptions.length > 0) {
+        sql`UPDATE dog_posts SET photo_descriptions = ${JSON.stringify(descriptions)} WHERE id = ${dog.id}`
+          .catch(err => console.error('[dog-posts] Failed to save photo descriptions:', err.message));
+      }
+    }).catch(err => console.error('[dog-posts] Failed to describe photos:', err.message));
+  }
+
+  return Response.json(dog, { status: 201 });
 }

@@ -15,7 +15,7 @@ function ResultsContent() {
 
   useEffect(() => {
     if (hasError) { setLoading(false); return; }
-    if (!sessionId) { router.push('/quiz'); return; }
+    if (!sessionId || sessionId === 'undefined') { router.push('/quiz'); return; }
 
     const saved = sessionStorage.getItem('adoptionsResult');
     if (saved) {
@@ -157,7 +157,11 @@ function ResultsContent() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '1.1rem', fontWeight: 700, flexShrink: 0,
                   }}>#{i + 1}</div>
-                  <div className="dog-avatar" style={{ width: 56, height: 56, fontSize: '1.8rem' }}>🐕</div>
+                  {match.photo ? (
+                    <img src={match.photo} alt={match.name} style={{ width: 56, height: 56, borderRadius: 'var(--radius-sm)', objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div className="dog-avatar" style={{ width: 56, height: 56, fontSize: '1.8rem' }}>🐕</div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div className="dog-name">{match.name || 'Unknown'}</div>
                     <div className="dog-meta">{match.breed || 'Mixed'} · {match.sex}</div>
@@ -185,6 +189,44 @@ function ResultsContent() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Photo-based visual matches */}
+        {result.photoMatches?.length > 0 && (
+          <div style={{ marginTop: 40 }}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: '2rem', marginBottom: 8 }}>📷</div>
+              <h3 style={{ fontSize: '1.3rem', color: 'var(--bark)', marginBottom: 4 }}>Visually similar dogs</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Based on the photo you uploaded</p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
+              {result.photoMatches.map((pm) => (
+                <Link key={pm.dogId} href={`/dogs/${pm.dogId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                    {pm.photo ? (
+                      <img src={pm.photo} alt={pm.name} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: 140, background: 'var(--cream)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>🐕</div>
+                    )}
+                    <div style={{ padding: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <strong style={{ color: 'var(--bark)', fontSize: '0.9rem' }}>{pm.name}</strong>
+                        <span className="badge badge-leaf" style={{ fontSize: '0.7rem' }}>{pm.similarity}%</span>
+                      </div>
+                      {pm.breed && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>{pm.breed}</p>}
+                      {pm.matchedTraits?.length > 0 && (
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
+                          {pm.matchedTraits.slice(0, 2).map((t, i) => (
+                            <span key={i} style={{ fontSize: '0.65rem', color: 'var(--text-muted)', background: 'var(--cream)', padding: '2px 5px', borderRadius: 3 }}>{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
 

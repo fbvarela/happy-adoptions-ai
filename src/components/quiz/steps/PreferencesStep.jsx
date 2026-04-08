@@ -1,10 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { resizeImage } from '@/lib/resizeImage';
 
 export function PreferencesStep({ data, onNext, onBack, firstName }) {
   const [form, setForm] = useState(data?.preferences || {});
+  const [photo, setPhoto] = useState(data?.referencePhoto || null);
+  const fileRef = useRef(null);
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handlePhoto = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const resized = await resizeImage(reader.result, 512, 0.7);
+      setPhoto(resized);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setPhoto(null);
+    if (fileRef.current) fileRef.current.value = '';
+  };
 
   return (
     <div className="quiz-step">
@@ -61,9 +80,37 @@ export function PreferencesStep({ data, onNext, onBack, firstName }) {
         </label>
       </div>
 
+      {/* Optional reference photo */}
+      <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--line)' }}>
+        <label className="input-label">Have a dog in mind? Upload a photo (optional)</label>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 10 }}>
+          We&apos;ll use AI to find visually similar dogs in our listings.
+        </p>
+        {photo ? (
+          <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
+            <img src={photo} alt="Reference" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+            <button
+              type="button"
+              onClick={removePhoto}
+              style={{
+                position: 'absolute', top: 4, right: 4,
+                background: 'rgba(0,0,0,0.55)', color: '#fff',
+                border: 'none', borderRadius: '50%', width: 22, height: 22,
+                cursor: 'pointer', fontSize: '0.75rem',
+              }}
+            >x</button>
+          </div>
+        ) : (
+          <label style={{ display: 'block', cursor: 'pointer' }}>
+            <div className="btn btn-ghost btn-sm" tabIndex={-1}>📷 Upload photo</div>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
+          </label>
+        )}
+      </div>
+
       <div className="modal-footer">
         <button className="btn btn-ghost" onClick={onBack}>Back</button>
-        <button className="btn btn-leaf" onClick={() => onNext({ preferences: form })}>
+        <button className="btn btn-leaf" onClick={() => onNext({ preferences: form, referencePhoto: photo || null })}>
           {firstName ? `Find my matches, ${firstName} →` : 'Find my matches →'}
         </button>
       </div>

@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 const PUBLIC_PATHS = [
   '/login',
   '/api/auth/',
+  '/api/photo-describe',
+  '/api/photo-search',
   '/_next/',
   '/icons/',
   '/manifest.json',

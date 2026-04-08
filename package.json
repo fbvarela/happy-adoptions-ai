@@ -18,10 +18,12 @@
     "@opennextjs/cloudflare": "^1.18.0",
     "@tailwindcss/postcss": "^4.2.2",
     "cohere-ai": "^8.0.0",
+    "groq-sdk": "^1.1.2",
     "iron-session": "^8.0.1",
     "next": "^16.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.2.2",
     "uuid": "^13.0.0",
     "wrangler": "^4.81.0"

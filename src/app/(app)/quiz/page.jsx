@@ -98,7 +98,11 @@ function QuizContent() {
       const res = await fetch('/api/match', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: allAnswers, shelterId: shelterId || null }),
+        body: JSON.stringify({
+          profile: allAnswers,
+          shelterId: shelterId || null,
+          referencePhoto: allAnswers.referencePhoto || null,
+        }),
       });
       const data = await res.json();
 
