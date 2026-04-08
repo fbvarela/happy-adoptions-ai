@@ -11,10 +11,19 @@ export default function PostADogPage() {
   const { showToast } = useApp();
   const router = useRouter();
 
+  const BREEDS = [
+    'Mixed / Unknown', 'Labrador Retriever', 'German Shepherd', 'Golden Retriever',
+    'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Dachshund', 'Boxer',
+    'Siberian Husky', 'Chihuahua', 'Pit Bull / Staffy', 'Border Collie',
+    'Cocker Spaniel', 'Shih Tzu', 'Yorkshire Terrier', 'Doberman',
+    'Schnauzer', 'Dalmatian', 'Jack Russell Terrier', 'Pomeranian',
+    'Great Dane', 'Maltese', 'French Bulldog', 'Corgi', 'Other',
+  ];
+
   const [form, setForm] = useState({
-    name: '', breed: '', sex: '', ageMonths: '', weight: '', color: '',
+    name: '', breed: '', sex: '', ageApprox: '', weight: '', color: '',
     description: '', location: '', contactEmail: '', contactPhone: '',
-    temperament: {}, photos: [],
+    origin: '', temperament: {}, photos: [],
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,7 +59,7 @@ export default function PostADogPage() {
       const res = await fetch('/api/dog-posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, ageMonths: form.ageMonths ? parseInt(form.ageMonths) : null }),
+        body: JSON.stringify({ ...form, ageApprox: form.ageApprox || null, origin: form.origin || null }),
       });
       if (!res.ok) throw new Error('Failed to post');
       const dog = await res.json();
@@ -89,8 +98,11 @@ export default function PostADogPage() {
                 <input className="input" type="text" value={form.name} onChange={e => set('name', e.target.value)} required />
               </div>
               <div className="field">
-                <label className="input-label">Breed</label>
-                <input className="input" type="text" placeholder="e.g. Labrador, Mixed..." value={form.breed} onChange={e => set('breed', e.target.value)} />
+                <label className="input-label">Breed (approx)</label>
+                <select className="input" value={form.breed} onChange={e => set('breed', e.target.value)}>
+                  <option value="">Select breed...</option>
+                  {BREEDS.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
               </div>
             </div>
             <div className="grid2">
@@ -103,8 +115,21 @@ export default function PostADogPage() {
                 </select>
               </div>
               <div className="field">
-                <label className="input-label">Age (months)</label>
-                <input className="input" type="number" min="0" value={form.ageMonths} onChange={e => set('ageMonths', e.target.value)} />
+                <label className="input-label">Age (approx)</label>
+                <select className="input" value={form.ageApprox} onChange={e => set('ageApprox', e.target.value)}>
+                  <option value="">Select...</option>
+                  <option value="puppy">Puppy (under 1 year)</option>
+                  <option value="1">~1 year</option>
+                  <option value="2">~2 years</option>
+                  <option value="3">~3 years</option>
+                  <option value="4">~4 years</option>
+                  <option value="5">~5 years</option>
+                  <option value="6">~6 years</option>
+                  <option value="7">~7 years</option>
+                  <option value="8">~8 years</option>
+                  <option value="9">~9 years</option>
+                  <option value="10+">10+ years</option>
+                </select>
               </div>
             </div>
             <div className="grid2">
@@ -116,6 +141,15 @@ export default function PostADogPage() {
                 <label className="input-label">Color</label>
                 <input className="input" type="text" placeholder="e.g. golden, black & white" value={form.color} onChange={e => set('color', e.target.value)} />
               </div>
+            </div>
+            <div className="field">
+              <label className="input-label">Origin</label>
+              <select className="input" value={form.origin} onChange={e => set('origin', e.target.value)}>
+                <option value="">Select...</option>
+                <option value="street">Street / stray</option>
+                <option value="shelter">Shelter</option>
+                <option value="previous_owner">Previous owner</option>
+              </select>
             </div>
             <div className="field">
               <label className="input-label">Description</label>
@@ -159,7 +193,7 @@ export default function PostADogPage() {
 
           <div className="card" style={{ marginBottom: 20 }}>
             <div className="card-title">Temperament</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {[
                 { key: 'goodWithKids', label: '👶 Good with kids' },
                 { key: 'goodWithDogs', label: '🐕 Good with other dogs' },
@@ -167,6 +201,8 @@ export default function PostADogPage() {
                 { key: 'isCalm',       label: '😌 Calm / low energy' },
                 { key: 'isPlayful',    label: '🎾 Playful / high energy' },
                 { key: 'isTrained',    label: '🎓 Already trained' },
+                { key: 'tendsToEscape', label: '🏃 Tendency to escape' },
+                { key: 'isFearful',    label: '😨 Fearful' },
               ].map(({ key, label }) => (
                 <label key={key} className="checkbox-card">
                   <input type="checkbox" checked={!!form.temperament[key]} onChange={() => toggleTemp(key)} />

@@ -32,9 +32,9 @@ export async function POST(request) {
 
   const body = await request.json();
   const {
-    name, breed, sex, ageMonths, weight, color,
+    name, breed, sex, ageApprox, weight, color,
     temperament, description, location, contactEmail,
-    contactPhone, photos,
+    contactPhone, photos, origin,
   } = body;
 
   if (!name || !sex || !contactEmail) {
@@ -44,13 +44,13 @@ export async function POST(request) {
   const rows = await sql`
     INSERT INTO dog_posts (
       user_id, name, breed, sex, age_months, weight, color,
-      temperament, description, location, contact_email, contact_phone, photos
+      temperament, description, location, contact_email, contact_phone, photos, origin
     ) VALUES (
       ${session.userId}, ${name}, ${breed ?? null}, ${sex},
-      ${ageMonths ?? null}, ${weight ?? null}, ${color ?? null},
+      ${ageApprox ?? null}, ${weight ?? null}, ${color ?? null},
       ${JSON.stringify(temperament ?? {})}, ${description ?? null},
       ${location ?? null}, ${contactEmail}, ${contactPhone ?? null},
-      ${JSON.stringify(photos ?? [])}
+      ${JSON.stringify(photos ?? [])}, ${origin ?? null}
     )
     RETURNING *
   `;

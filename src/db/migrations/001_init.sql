@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS dog_posts (
   name          TEXT NOT NULL,
   breed         TEXT,
   sex           TEXT NOT NULL CHECK (sex IN ('male', 'female')),
-  age_months    INTEGER,
+  age_months    TEXT,  -- approx age: 'puppy', '1', '2', ..., '10+'
   weight        NUMERIC(5,2),
   color         TEXT,
   temperament   JSONB NOT NULL DEFAULT '{}',
@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS dog_posts (
   photos        JSONB NOT NULL DEFAULT '[]',
   status        TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'adopted', 'on_hold', 'removed')),
   special_needs BOOLEAN DEFAULT false,
+  origin        TEXT,  -- street, shelter, previous_owner
   updated_at    TIMESTAMPTZ DEFAULT now(),
   created_at    TIMESTAMPTZ DEFAULT now()
 );
