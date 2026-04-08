@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS dog_posts (
   status        TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'adopted', 'on_hold', 'removed')),
   special_needs BOOLEAN DEFAULT false,
   origin        TEXT,  -- street, shelter, previous_owner
+  photo_descriptions JSONB DEFAULT '[]',  -- AI-generated visual descriptions per photo
   updated_at    TIMESTAMPTZ DEFAULT now(),
   created_at    TIMESTAMPTZ DEFAULT now()
 );
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS shelter_dogs_cache (
   status      TEXT NOT NULL DEFAULT 'available',
   photos      JSONB NOT NULL DEFAULT '[]',
   special_needs BOOLEAN DEFAULT false,
+  photo_descriptions JSONB DEFAULT '[]',
   synced_at   TIMESTAMPTZ DEFAULT now()
 );
 

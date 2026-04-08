@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
+import { resizeImage } from '@/lib/resizeImage';
 import Link from 'next/link';
 
 export default function PostADogPage() {
@@ -31,7 +32,10 @@ export default function PostADogPage() {
     const files = Array.from(e.target.files);
     Promise.all(files.map(f => new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
+      reader.onload = async () => {
+        const resized = await resizeImage(reader.result, 800, 0.8);
+        resolve(resized);
+      };
       reader.readAsDataURL(f);
     }))).then(dataUrls => {
       setForm(prev => ({ ...prev, photos: [...prev.photos, ...dataUrls].slice(0, 6) }));
