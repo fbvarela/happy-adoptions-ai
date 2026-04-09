@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db';
 import { createHash, randomBytes } from 'crypto';
+import { getEnv } from '@/lib/env';
 
 const TOKEN_EXPIRY_MINUTES = 60;
 const RATE_LIMIT_PER_HOUR = 5;
@@ -58,7 +59,7 @@ export async function verifyMagicLink(token, email) {
 }
 
 export async function sendMagicLinkEmail(to, magicLink) {
-  if (!process.env.RESEND_API_KEY) {
+  if (!getEnv('RESEND_API_KEY')) {
     console.log('\n╔══════════════════════════════════════════╗');
     console.log('║  🐾 MAGIC LINK (dev mode)                ║');
     console.log(`║  To: ${to}`);
@@ -67,12 +68,12 @@ export async function sendMagicLinkEmail(to, magicLink) {
     return;
   }
 
-  const from = process.env.EMAIL_FROM ?? 'noreply@happyfactory.app';
+  const from = getEnv('EMAIL_FROM') ?? 'noreply@happyfactory.app';
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      Authorization: `Bearer ${getEnv('RESEND_API_KEY')}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

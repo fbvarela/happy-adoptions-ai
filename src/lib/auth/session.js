@@ -1,20 +1,23 @@
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import { getEnv } from '@/lib/env';
 
-export const SESSION_OPTIONS = {
-  password: process.env.SESSION_SECRET,
-  cookieName: 'adoptions_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  },
-};
+export function getSessionOptions() {
+  return {
+    password: getEnv('SESSION_SECRET'),
+    cookieName: 'adoptions_session',
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    },
+  };
+}
 
 export async function getSession() {
   const cookieStore = await cookies();
-  return getIronSession(cookieStore, SESSION_OPTIONS);
+  return getIronSession(cookieStore, getSessionOptions());
 }
 
 export async function requireAuth() {

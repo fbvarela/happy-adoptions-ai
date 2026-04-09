@@ -1,9 +1,19 @@
 import Groq from 'groq-sdk';
 import { CohereClientV2 } from 'cohere-ai';
 import sharp from 'sharp';
+import { getEnv } from '@/lib/env';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const cohere = new CohereClientV2({ token: process.env.COHERE_API_KEY });
+let _groq;
+function getGroq() {
+  if (!_groq) _groq = new Groq({ apiKey: getEnv('GROQ_API_KEY') });
+  return _groq;
+}
+
+let _cohere;
+function getCohere() {
+  if (!_cohere) _cohere = new CohereClientV2({ token: getEnv('COHERE_API_KEY') });
+  return _cohere;
+}
 
 /**
  * Compress a base64 data URL image server-side using sharp.
@@ -43,7 +53,7 @@ Return ONLY valid JSON:
 export async function describePhoto(base64DataUrl) {
   const compressed = await compressForVision(base64DataUrl);
   console.log('[vision] Compressed image size:', Math.round(compressed.length / 1024), 'KB');
-  const response = await groq.chat.completions.create({
+  const response = await getGroq().chat.completions.create({
     model: 'meta-llama/llama-4-scout-17b-16e-instruct',
     messages: [
       {
@@ -139,7 +149,7 @@ Return ONLY valid JSON:
 
 Sort by similarity descending. Include all dogs. Top ${limit} only.`;
 
-  const response = await cohere.chat({
+  const response = await getCohere().chat({
     model: 'command-a-03-2025',
     messages: [{ role: 'user', content: prompt }],
     maxTokens: 2048,

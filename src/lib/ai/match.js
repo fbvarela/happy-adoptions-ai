@@ -1,6 +1,11 @@
 import { CohereClientV2 } from 'cohere-ai';
+import { getEnv } from '@/lib/env';
 
-const client = new CohereClientV2({ token: process.env.COHERE_API_KEY });
+let _client;
+function getClient() {
+  if (!_client) _client = new CohereClientV2({ token: getEnv('COHERE_API_KEY') });
+  return _client;
+}
 
 /**
  * Given an adopter profile and a list of dogs, returns ranked matches with
@@ -16,7 +21,7 @@ export async function matchDogsToAdopter(profile, dogs = []) {
     ? buildIdealModePrompt(profile)
     : buildMatchPrompt(profile, dogs);
 
-  const response = await client.chat({
+  const response = await getClient().chat({
     model: 'command-a-03-2025',
     messages: [{ role: 'user', content: prompt }],
     maxTokens: 2048,
@@ -119,7 +124,7 @@ function parseResponse(text, idealMode) {
  * describing what kind of home this dog needs.
  */
 export async function assessDogForAdoption(dogProfile) {
-  const response = await client.chat({
+  const response = await getClient().chat({
     model: 'command-a-03-2025',
     messages: [{ role: 'user', content: buildAssessmentPrompt(dogProfile) }],
     maxTokens: 1536,
@@ -173,7 +178,7 @@ function parseAssessmentResponse(text) {
  * Given an adopter profile, returns volunteer role suggestions ranked by fit.
  */
 export async function matchVolunteerOpportunities(profile) {
-  const response = await client.chat({
+  const response = await getClient().chat({
     model: 'command-a-03-2025',
     messages: [{ role: 'user', content: buildVolunteerPrompt(profile) }],
     maxTokens: 1024,

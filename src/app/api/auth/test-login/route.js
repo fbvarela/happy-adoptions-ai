@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { getSession } from '@/lib/auth/session';
+import { getEnv } from '@/lib/env';
 
 export async function POST(request) {
   try {
-    const testEmail = process.env.TEST_LOGIN_EMAIL;
-    const testPassword = process.env.TEST_LOGIN_PASSWORD;
+    const testEmail = getEnv('TEST_LOGIN_EMAIL');
+    const testPassword = getEnv('TEST_LOGIN_PASSWORD');
 
     if (!testEmail || !testPassword) {
       return NextResponse.json({ error: 'Test login not configured' }, { status: 404 });
