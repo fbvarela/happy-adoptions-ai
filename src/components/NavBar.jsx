@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useRole } from '@/context/RoleContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const ADOPTER_NAV = [
   { href: '/',       icon: '🏠', label: 'Home' },
@@ -84,15 +85,21 @@ export function NavBar() {
               </button>
             </div>
           )}
+          <div className="sidebar-footer-row" style={{ marginTop: 8, justifyContent: 'flex-start' }}>
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 
       {/* Mobile top bar */}
       <div className="nav-mobile-bar">
         <div className="nav-logo">🐾 Happy Adoptions</div>
-        {role === 'volunteer' && !user && (
-          <Link href="/login" className="btn btn-sm btn-sun">Sign In</Link>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ThemeToggle />
+          {role === 'volunteer' && !user && (
+            <Link href="/login" className="btn btn-sm btn-sun">Sign In</Link>
+          )}
+        </div>
       </div>
     </>
   );
