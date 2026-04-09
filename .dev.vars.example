@@ -1,0 +1,10 @@
+# Cloudflare Workers dev secrets — copy to .dev.vars and fill in values
+# These are NOT committed to git
+
+DATABASE_URL=postgresql://...
+SESSION_SECRET=at-least-32-characters-long-secret-here
+COHERE_API_KEY=
+GROQ_API_KEY=
+RESEND_API_KEY=
+TEST_LOGIN_EMAIL=test@example.com
+TEST_LOGIN_PASSWORD=testpassword
