@@ -3,12 +3,15 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from '@/i18n/useTranslations';
 
 function ResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get('session');
   const hasError = searchParams.get('error') === 'true';
+  const t = useTranslations('results');
+  const tc = useTranslations('common');
 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,17 +46,17 @@ function ResultsContent() {
     return (
       <div className="page" style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '3rem', marginBottom: 16 }}>😕</div>
-        <h2 style={{ color: 'var(--bark)', marginBottom: 12 }}>Something went wrong</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>We couldn&apos;t generate your matches. Try again.</p>
-        <Link href="/quiz" className="btn btn-primary">Retake quiz</Link>
+        <h2 style={{ color: 'var(--bark)', marginBottom: 12 }}>{t('somethingWrong')}</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{t('couldntGenerate')}</p>
+        <Link href="/quiz" className="btn btn-primary">{t('retakeQuiz')}</Link>
       </div>
     );
   }
 
   const exportActions = (
     <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginTop: 32 }}>
-      <button className="btn btn-primary" onClick={() => window.print()}>Print / Save PDF</button>
-      <Link href="/quiz" className="btn btn-ghost">← Retake quiz</Link>
+      <button className="btn btn-primary" onClick={() => window.print()}>{tc('printSavePdf')}</button>
+      <Link href="/quiz" className="btn btn-ghost">← {t('retakeQuiz')}</Link>
     </div>
   );
 
@@ -65,7 +68,7 @@ function ResultsContent() {
         <div style={{ maxWidth: 700, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <div style={{ fontSize: '3rem', marginBottom: 8 }}>🎯</div>
-            <h2 style={{ fontSize: '1.8rem', color: 'var(--bark)', marginBottom: 8 }}>Your ideal dog profile</h2>
+            <h2 style={{ fontSize: '1.8rem', color: 'var(--bark)', marginBottom: 8 }}>{t('idealDogProfile')}</h2>
             <p style={{ color: 'var(--text-muted)' }}>{idealProfile.summary}</p>
           </div>
 
@@ -112,7 +115,7 @@ function ResultsContent() {
 
           {idealProfile.tips?.length > 0 && (
             <div className="card" style={{ background: 'var(--cream)' }}>
-              <h3 style={{ color: 'var(--bark)', marginBottom: 12 }}>Tips for your shelter visit</h3>
+              <h3 style={{ color: 'var(--bark)', marginBottom: 12 }}>{t('shelterVisitTips')}</h3>
               <ul style={{ paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {idealProfile.tips.map((tip, i) => (
                   <li key={i} style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{tip}</li>
@@ -136,15 +139,15 @@ function ResultsContent() {
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{ fontSize: '3rem', marginBottom: 8 }}>🎉</div>
           <h2 style={{ fontSize: '1.8rem', color: 'var(--bark)', marginBottom: 8 }}>
-            {matches.length} match{matches.length !== 1 ? 'es' : ''} found
+            {matches.length === 1 ? t('matchesFound', { count: 1 }) : t('matchesFoundPlural', { count: matches.length })}
           </h2>
-          <p style={{ color: 'var(--text-muted)' }}>Ranked by compatibility with your profile</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t('rankedByCompatibility')}</p>
         </div>
 
         {matches.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 40 }}>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>No dogs matched your criteria right now.</p>
-            <Link href="/shelters" className="btn btn-primary">Browse shelters</Link>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('noDogsMatched')}</p>
+            <Link href="/shelters" className="btn btn-primary">{t('browseShelters')}</Link>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -162,9 +165,9 @@ function ResultsContent() {
                   ) : (
                     <div className="dog-avatar" style={{ width: 56, height: 56, fontSize: '1.8rem' }}>🐕</div>
                   )}
-                  <div style={{ flex: 1 }}>
-                    <div className="dog-name">{match.name || 'Unknown'}</div>
-                    <div className="dog-meta">{match.breed || 'Mixed'} · {match.sex}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="dog-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.name || tc('unknown')}</div>
+                    <div className="dog-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{match.breed || tc('mixed')} · {match.sex}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
                       <div className="match-bar-track">
                         <div className={`match-bar-fill ${match.matchPercentage >= 80 ? 'high' : 'medium'}`}
@@ -197,8 +200,8 @@ function ResultsContent() {
           <div style={{ marginTop: 40 }}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
               <div style={{ fontSize: '2rem', marginBottom: 8 }}>📷</div>
-              <h3 style={{ fontSize: '1.3rem', color: 'var(--bark)', marginBottom: 4 }}>Visually similar dogs</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Based on the photo you uploaded</p>
+              <h3 style={{ fontSize: '1.3rem', color: 'var(--bark)', marginBottom: 4 }}>{t('visuallySimilar')}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('basedOnPhoto')}</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
               {result.photoMatches.map((pm) => (
@@ -217,8 +220,8 @@ function ResultsContent() {
                       {pm.breed && <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0 }}>{pm.breed}</p>}
                       {pm.matchedTraits?.length > 0 && (
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
-                          {pm.matchedTraits.slice(0, 2).map((t, i) => (
-                            <span key={i} style={{ fontSize: '0.65rem', color: 'var(--text-muted)', background: 'var(--cream)', padding: '2px 5px', borderRadius: 3 }}>{t}</span>
+                          {pm.matchedTraits.slice(0, 2).map((tt, i) => (
+                            <span key={i} style={{ fontSize: '0.65rem', color: 'var(--text-muted)', background: 'var(--cream)', padding: '2px 5px', borderRadius: 3 }}>{tt}</span>
                           ))}
                         </div>
                       )}

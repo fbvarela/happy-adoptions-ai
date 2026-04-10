@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export default function SheltersPage() {
   const [shelters, setShelters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('shelters');
 
   useEffect(() => {
     fetch('/api/shelters')
@@ -17,8 +19,8 @@ export default function SheltersPage() {
 
   return (
     <div className="page">
-      <h1 className="page-title">Shelters</h1>
-      <p className="page-sub">Shelters connected to Happy Adoptions. Start the quiz linked to a specific shelter to match against their dogs.</p>
+      <h1 className="page-title">{t('pageTitle')}</h1>
+      <p className="page-sub">{t('pageDescription')}</p>
 
       {loading ? (
         <div style={{ textAlign: 'center', paddingTop: 40 }}>
@@ -27,11 +29,11 @@ export default function SheltersPage() {
       ) : shelters.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: 40, background: 'var(--cream)' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🏡</div>
-          <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>No shelters connected yet</h3>
+          <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>{t('noShelters')}</h3>
           <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>
-            Shelters register through Happy Shelter AI. You can still use the quiz to get matched with independent listings.
+            {t('noSheltersDesc')}
           </p>
-          <Link href="/quiz" className="btn btn-primary">Start the quiz →</Link>
+          <Link href="/quiz" className="btn btn-primary">{t('startQuiz')} →</Link>
         </div>
       ) : (
         <div className="grid2" style={{ gap: 20 }}>
@@ -57,10 +59,10 @@ export default function SheltersPage() {
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between' }}>
                 {shelter.dog_count > 0 && (
-                  <span className="badge">{shelter.dog_count} dogs available</span>
+                  <span className="badge">{t('dogsAvailable', { count: shelter.dog_count })}</span>
                 )}
                 <Link href={`/quiz?shelter=${shelter.id}`} className="btn btn-primary btn-sm">
-                  Find my match →
+                  {t('findMyMatch')} →
                 </Link>
               </div>
             </div>

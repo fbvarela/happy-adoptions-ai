@@ -58,7 +58,27 @@ export async function verifyMagicLink(token, email) {
   return { valid: true, user: users[0] };
 }
 
-export async function sendMagicLinkEmail(to, magicLink) {
+const EMAIL_STRINGS = {
+  en: {
+    subject: 'Your Happy Adoptions sign-in link',
+    heading: '🐾 Happy Adoptions AI',
+    body: 'Click the button below to sign in. This link expires in 1 hour.',
+    button: 'Sign in to Happy Adoptions',
+    copyLink: 'Or copy this link:',
+    ignore: 'If you did not request this, you can safely ignore this email.',
+  },
+  'es-ES': {
+    subject: 'Tu enlace de acceso a Happy Adoptions',
+    heading: '🐾 Happy Adoptions AI',
+    body: 'Haz clic en el boton de abajo para iniciar sesion. Este enlace caduca en 1 hora.',
+    button: 'Iniciar sesion en Happy Adoptions',
+    copyLink: 'O copia este enlace:',
+    ignore: 'Si no has solicitado esto, puedes ignorar este email.',
+  },
+};
+
+export async function sendMagicLinkEmail(to, magicLink, locale = 'en') {
+  const strings = EMAIL_STRINGS[locale] || EMAIL_STRINGS.en;
   if (!getEnv('RESEND_API_KEY')) {
     console.log('\n╔══════════════════════════════════════════╗');
     console.log('║  🐾 MAGIC LINK (dev mode)                ║');
@@ -79,22 +99,22 @@ export async function sendMagicLinkEmail(to, magicLink) {
     body: JSON.stringify({
       from,
       to,
-      subject: 'Your Happy Adoptions sign-in link',
+      subject: strings.subject,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-          <h2 style="color:#3d2b1f">🐾 Happy Adoptions AI</h2>
-          <p>Click the button below to sign in. This link expires in 1 hour.</p>
+          <h2 style="color:#3d2b1f">${strings.heading}</h2>
+          <p>${strings.body}</p>
           <a href="${magicLink}"
              style="display:inline-block;background:#4a7c59;color:#fff;text-decoration:none;
                     padding:12px 24px;border-radius:6px;font-weight:600;margin:16px 0">
-            Sign in to Happy Adoptions
+            ${strings.button}
           </a>
           <p style="color:#6b7280;font-size:14px">
-            Or copy this link:<br/>
+            ${strings.copyLink}<br/>
             <a href="${magicLink}" style="color:#4a7c59;word-break:break-all">${magicLink}</a>
           </p>
           <p style="color:#9ca3af;font-size:12px">
-            If you did not request this, you can safely ignore this email.
+            ${strings.ignore}
           </p>
         </div>
       `,

@@ -3,7 +3,7 @@ import { sql } from '@/lib/db';
 import { describePhoto, findSimilarDogs } from '@/lib/ai/vision';
 
 export async function POST(request) {
-  const { profile, shelterId, dogPostIds, referencePhoto } = await request.json();
+  const { profile, shelterId, dogPostIds, referencePhoto, locale } = await request.json();
 
   if (!profile) {
     return Response.json({ error: 'Profile is required' }, { status: 400 });
@@ -41,7 +41,7 @@ export async function POST(request) {
       // DB unavailable — proceed with ideal mode (no real dogs)
     }
 
-    const matchResult = await matchDogsToAdopter(profile, dogs);
+    const matchResult = await matchDogsToAdopter(profile, dogs, { locale: locale || 'en' });
 
     // Enrich AI matches with actual dog data (name, breed, sex, photos)
     if (matchResult.matches) {

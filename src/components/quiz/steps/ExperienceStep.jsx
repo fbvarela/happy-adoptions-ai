@@ -1,23 +1,26 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export function ExperienceStep({ data, onNext, onBack }) {
   const [form, setForm] = useState(data?.experience || {});
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const t = useTranslations('quiz.experience');
+  const tc = useTranslations('common');
 
   return (
     <div className="quiz-step">
-      <h3>Your experience with dogs</h3>
-      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>Helps us find a dog that fits your confidence level.</p>
+      <h3>{t('title')}</h3>
+      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>{t('subtitle')}</p>
 
       <label className="checkbox-card">
         <input type="checkbox" checked={!!form.firstTimeOwner} onChange={e => set('firstTimeOwner', e.target.checked)} />
-        <div className="card-content"><span>🌱</span><span>This is my first dog</span></div>
+        <div className="card-content"><span>🌱</span><span>{t('firstDog')}</span></div>
       </label>
 
       <div className="field">
-        <label className="input-label">How many dogs have you owned before?</label>
+        <label className="input-label">{t('previousDogs')}</label>
         <input
           className="input" type="number" min="0" max="50"
           value={form.previousDogs ?? ''}
@@ -26,23 +29,23 @@ export function ExperienceStep({ data, onNext, onBack }) {
       </div>
 
       <div className="field">
-        <label className="input-label">Training experience</label>
+        <label className="input-label">{t('trainingExperience')}</label>
         <select className="input" value={form.trainingExperience || ''} onChange={e => set('trainingExperience', e.target.value)}>
-          <option value="">Select...</option>
-          <option value="none">None — happy to learn</option>
-          <option value="basic">Basic commands only</option>
-          <option value="experienced">Experienced trainer</option>
+          <option value="">{tc('select')}</option>
+          <option value="none">{t('noTraining')}</option>
+          <option value="basic">{t('basicTraining')}</option>
+          <option value="experienced">{t('experiencedTrainer')}</option>
         </select>
       </div>
 
       <label className="checkbox-card">
         <input type="checkbox" checked={!!form.openToSpecialNeeds} onChange={e => set('openToSpecialNeeds', e.target.checked)} />
-        <div className="card-content"><span>💛</span><span>Open to dogs with special needs</span></div>
+        <div className="card-content"><span>💛</span><span>{t('specialNeeds')}</span></div>
       </label>
 
       <div className="modal-footer">
-        <button className="btn btn-ghost" onClick={onBack}>Back</button>
-        <button className="btn btn-primary" onClick={() => onNext({ experience: form })}>Continue</button>
+        <button className="btn btn-ghost" onClick={onBack}>{tc('back')}</button>
+        <button className="btn btn-primary" onClick={() => onNext({ experience: form })}>{tc('continue')}</button>
       </div>
     </div>
   );

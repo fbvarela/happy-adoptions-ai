@@ -5,12 +5,16 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export default function DogProfilePage() {
   const { id } = useParams();
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useApp();
+  const t = useTranslations('dogDetail');
+  const tt = useTranslations('temperament');
+  const tc = useTranslations('common');
 
   const [dog, setDog] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,9 +37,9 @@ export default function DogProfilePage() {
         body: JSON.stringify({ dogPostId: id }),
       });
       setFavorited(true);
-      showToast('Added to favorites!');
+      showToast(t('addedToFavorites'));
     } catch {
-      showToast('Failed to save favorite', 'error');
+      showToast(t('failedToSave'), 'error');
     }
   };
 
@@ -49,14 +53,14 @@ export default function DogProfilePage() {
 
   if (!dog) return null;
 
-  const t = dog.temperament || {};
+  const temp = dog.temperament || {};
 
   return (
     <div className="page">
       <div style={{ maxWidth: 700, margin: '0 auto' }}>
         {/* Back */}
         <button className="btn btn-ghost btn-sm" onClick={() => router.back()} style={{ marginBottom: 20 }}>
-          ← Back
+          ← {t('back')}
         </button>
 
         {/* Header */}
@@ -66,7 +70,7 @@ export default function DogProfilePage() {
             <div style={{ flex: 1 }}>
               <div className="dog-name" style={{ fontSize: '1.6rem' }}>{dog.name}</div>
               <div className="dog-meta" style={{ marginTop: 4 }}>
-                {dog.breed || 'Mixed'} · {dog.sex} · {dog.age_months ? `${Math.floor(dog.age_months / 12)}y ${dog.age_months % 12}m` : 'Age unknown'}
+                {dog.breed || tc('mixed')} · {dog.sex} · {dog.age_months ? `${Math.floor(dog.age_months / 12)}y ${dog.age_months % 12}m` : tc('unknown')}
                 {dog.weight ? ` · ${dog.weight}kg` : ''}
               </div>
               {dog.location && (
@@ -78,42 +82,42 @@ export default function DogProfilePage() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {t.goodWithKids && <span className="badge badge-leaf">👶 Good with kids</span>}
-            {t.goodWithDogs && <span className="badge badge-leaf">🐕 Good with dogs</span>}
-            {t.goodWithCats && <span className="badge badge-leaf">🐈 Good with cats</span>}
-            {t.isCalm      && <span className="badge badge-sun">😌 Calm</span>}
-            {t.isPlayful   && <span className="badge badge-sun">🎾 Playful</span>}
-            {dog.special_needs && <span className="badge badge-clay">💛 Special needs</span>}
+            {temp.goodWithKids && <span className="badge badge-leaf">👶 {tt('goodWithKids')}</span>}
+            {temp.goodWithDogs && <span className="badge badge-leaf">🐕 {tt('goodWithDogs')}</span>}
+            {temp.goodWithCats && <span className="badge badge-leaf">🐈 {tt('goodWithCats')}</span>}
+            {temp.isCalm      && <span className="badge badge-sun">😌 {tt('calm')}</span>}
+            {temp.isPlayful   && <span className="badge badge-sun">🎾 {tt('playful')}</span>}
+            {dog.special_needs && <span className="badge badge-clay">💛 {tt('specialNeeds')}</span>}
           </div>
         </div>
 
         {/* Description */}
         {dog.description && (
           <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-title">About {dog.name}</div>
+            <div className="card-title">{t('about', { name: dog.name })}</div>
             <p style={{ color: 'var(--text-muted)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{dog.description}</p>
           </div>
         )}
 
         {/* Contact */}
         <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-title">Contact</div>
+          <div className="card-title">{t('contact')}</div>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 16 }}>
-            Interested in {dog.name}? Reach out to the owner directly.
+            {t('interestedIn', { name: dog.name })}
           </p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {dog.contact_email && (
               <a href={`mailto:${dog.contact_email}?subject=Interested in adopting ${dog.name}`} className="btn btn-leaf">
-                ✉️ Email owner
+                ✉️ {t('emailOwner')}
               </a>
             )}
             {dog.contact_phone && (
               <a href={`tel:${dog.contact_phone}`} className="btn btn-ghost">
-                📞 Call
+                📞 {t('call')}
               </a>
             )}
             <button className="btn btn-ghost" onClick={handleFavorite} disabled={favorited}>
-              {favorited ? '❤️ Saved' : '🤍 Save'}
+              {favorited ? `❤️ ${tc('saved')}` : `🤍 ${tc('save')}`}
             </button>
           </div>
         </div>
@@ -121,9 +125,9 @@ export default function DogProfilePage() {
         {/* CTA if not matched yet */}
         <div className="card" style={{ background: 'var(--cream)', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', marginBottom: 12, fontSize: '0.9rem' }}>
-            Not sure if {dog.name} is right for you?
+            {t('notSure', { name: dog.name })}
           </p>
-          <Link href="/quiz" className="btn btn-primary">Take the matching quiz →</Link>
+          <Link href="/quiz" className="btn btn-primary">{t('takeQuiz')} →</Link>
         </div>
       </div>
     </div>
