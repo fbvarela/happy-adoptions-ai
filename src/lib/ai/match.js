@@ -14,12 +14,12 @@ function getClient() {
  * - With dogs: scores and ranks each dog against the adopter profile
  * - Without dogs (ideal mode): returns breed/type recommendations only
  */
-export async function matchDogsToAdopter(profile, dogs = []) {
+export async function matchDogsToAdopter(profile, dogs = [], { locale = 'en' } = {}) {
   const idealMode = dogs.length === 0;
 
   const prompt = idealMode
-    ? buildIdealModePrompt(profile)
-    : buildMatchPrompt(profile, dogs);
+    ? buildIdealModePrompt(profile, locale)
+    : buildMatchPrompt(profile, dogs, locale);
 
   const response = await getClient().chat({
     model: 'command-a-03-2025',
@@ -31,8 +31,17 @@ export async function matchDogsToAdopter(profile, dogs = []) {
   return parseResponse(text, idealMode);
 }
 
-function buildMatchPrompt(profile, dogs) {
-  return `You are a dog adoption matching expert. Analyze the adopter profile and rank the dogs by compatibility.
+const LOCALE_INSTRUCTIONS = {
+  'en': '',
+  'es-ES': '\n\nIMPORTANT: Write ALL human-readable text (summaries, reasons, deal-breakers, tips, considerations) in Spanish (Castilian/Spain). Use natural, friendly Castilian Spanish phrasing. JSON keys must remain in English.',
+};
+
+function getLocaleInstruction(locale) {
+  return LOCALE_INSTRUCTIONS[locale] || '';
+}
+
+function buildMatchPrompt(profile, dogs, locale) {
+  return `You are a dog adoption matching expert. Analyze the adopter profile and rank the dogs by compatibility.${getLocaleInstruction(locale)}
 
 ## Adopter Profile
 ${JSON.stringify(profile, null, 2)}
@@ -80,8 +89,8 @@ Return ONLY valid JSON in this exact format:
 Sort by matchPercentage descending. Include all dogs.`;
 }
 
-function buildIdealModePrompt(profile) {
-  return `You are a dog adoption expert. Based on this adopter profile, recommend the ideal dog types/breeds.
+function buildIdealModePrompt(profile, locale) {
+  return `You are a dog adoption expert. Based on this adopter profile, recommend the ideal dog types/breeds.${getLocaleInstruction(locale)}
 
 ## Adopter Profile
 ${JSON.stringify(profile, null, 2)}
@@ -123,17 +132,17 @@ function parseResponse(text, idealMode) {
  * Given a dog's profile entered by a volunteer, returns an ideal adopter profile
  * describing what kind of home this dog needs.
  */
-export async function assessDogForAdoption(dogProfile) {
+export async function assessDogForAdoption(dogProfile, { locale = 'en' } = {}) {
   const response = await getClient().chat({
     model: 'command-a-03-2025',
-    messages: [{ role: 'user', content: buildAssessmentPrompt(dogProfile) }],
+    messages: [{ role: 'user', content: buildAssessmentPrompt(dogProfile, locale) }],
     maxTokens: 1536,
   });
   return parseAssessmentResponse(response.message?.content?.[0]?.text || '');
 }
 
-function buildAssessmentPrompt(dog) {
-  return `You are a dog adoption expert helping a shelter volunteer write an ideal adopter profile for a dog in their care.
+function buildAssessmentPrompt(dog, locale) {
+  return `You are a dog adoption expert helping a shelter volunteer write an ideal adopter profile for a dog in their care.${getLocaleInstruction(locale)}
 
 ## Dog Profile
 ${JSON.stringify(dog, null, 2)}
@@ -177,17 +186,17 @@ function parseAssessmentResponse(text) {
 /**
  * Given an adopter profile, returns volunteer role suggestions ranked by fit.
  */
-export async function matchVolunteerOpportunities(profile) {
+export async function matchVolunteerOpportunities(profile, { locale = 'en' } = {}) {
   const response = await getClient().chat({
     model: 'command-a-03-2025',
-    messages: [{ role: 'user', content: buildVolunteerPrompt(profile) }],
+    messages: [{ role: 'user', content: buildVolunteerPrompt(profile, locale) }],
     maxTokens: 1024,
   });
   return parseVolunteerResponse(response.message?.content?.[0]?.text || '');
 }
 
-function buildVolunteerPrompt(profile) {
-  return `You are a shelter volunteer coordinator. Based on this adopter profile, suggest volunteer opportunities that match their lifestyle.
+function buildVolunteerPrompt(profile, locale) {
+  return `You are a shelter volunteer coordinator. Based on this adopter profile, suggest volunteer opportunities that match their lifestyle.${getLocaleInstruction(locale)}
 
 ## Adopter Profile
 ${JSON.stringify(profile, null, 2)}

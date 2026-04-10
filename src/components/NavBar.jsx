@@ -5,25 +5,30 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useRole } from '@/context/RoleContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-
-const ADOPTER_NAV = [
-  { href: '/',       icon: '🏠', label: 'Home' },
-  { href: '/quiz',   icon: '🐾', label: 'Find a Dog' },
-  { href: '/results',icon: '📄', label: 'My Results' },
-];
-
-const VOLUNTEER_NAV = [
-  { href: '/',          icon: '🏠', label: 'Home' },
-  { href: '/assess',    icon: '🤖', label: 'Assess a Dog' },
-  { href: '/post-a-dog',icon: '📋', label: 'Post a Dog' },
-  { href: '/shelters',  icon: '🏡', label: 'Shelters' },
-  { href: '/dashboard', icon: '👤', label: 'My Account', authRequired: true },
-];
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export function NavBar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const { role, clearRole, mounted } = useRole();
+  const t = useTranslations('nav');
+  const tc = useTranslations('common');
+
+  const ADOPTER_NAV = [
+    { href: '/',       icon: '🏠', label: t('home') },
+    { href: '/quiz',   icon: '🐾', label: t('findADog') },
+    { href: '/results',icon: '📄', label: t('myResults') },
+    { href: '/dashboard', icon: '👤', label: t('myAccount'), authRequired: true },
+  ];
+
+  const VOLUNTEER_NAV = [
+    { href: '/',          icon: '🏠', label: t('home') },
+    { href: '/assess',    icon: '🤖', label: t('assessADog') },
+    { href: '/post-a-dog',icon: '📋', label: t('postADog') },
+    { href: '/shelters',  icon: '🏡', label: t('shelters') },
+    { href: '/dashboard', icon: '👤', label: t('myAccount'), authRequired: true },
+  ];
 
   const items = role === 'volunteer' ? VOLUNTEER_NAV : ADOPTER_NAV;
 
@@ -31,7 +36,7 @@ export function NavBar() {
     <>
       {/* Desktop sidebar */}
       <nav className="sidebar-nav">
-        <div className="sidebar-logo">🐾 Happy Adoptions</div>
+        <div className="sidebar-logo">🐾 {t('logo')}</div>
 
         {mounted && role && (
           <div style={{ padding: '0 16px 12px', marginTop: -4 }}>
@@ -41,13 +46,13 @@ export function NavBar() {
               background: role === 'volunteer' ? 'var(--sun-light, #fff7e6)' : 'var(--leaf-light, #edf7ee)',
               padding: '2px 8px', borderRadius: 99,
             }}>
-              {role === 'volunteer' ? '🤝 Volunteer' : '🏠 Adopter'}
+              {role === 'volunteer' ? `🤝 ${t('volunteer')}` : `🏠 ${t('adopter')}`}
             </span>
           </div>
         )}
 
         <div className="sidebar-items">
-          <div className="sidebar-section">{role === 'volunteer' ? 'Volunteer' : 'Adopt'}</div>
+          <div className="sidebar-section">{role === 'volunteer' ? t('volunteer') : t('adopt')}</div>
           {items.filter(i => !i.authRequired || user).map(item => (
             <Link
               key={item.href}
@@ -58,19 +63,19 @@ export function NavBar() {
               <span className="sideitem-label">{item.label}</span>
             </Link>
           ))}
-          {role === 'volunteer' && !user && (
+          {!user && (
             <Link href="/login" className={`sideitem ${pathname === '/login' ? 'active' : ''}`}>
               <span className="sideitem-icon">🔑</span>
-              <span className="sideitem-label">Sign In</span>
+              <span className="sideitem-label">{tc('signIn')}</span>
             </Link>
           )}
         </div>
 
         <div className="sidebar-footer">
-          {user && role === 'volunteer' && (
+          {user && (
             <div className="sidebar-footer-row">
               <button className="sidebar-logout-btn" onClick={logout}>
-                {user.email} · Sign out
+                {user.email} · {tc('signOut')}
               </button>
             </div>
           )}
@@ -81,23 +86,25 @@ export function NavBar() {
                 onClick={clearRole}
                 style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}
               >
-                Switch role
+                {tc('switchRole')}
               </button>
             </div>
           )}
-          <div className="sidebar-footer-row" style={{ marginTop: 8, justifyContent: 'flex-start' }}>
+          <div className="sidebar-footer-row" style={{ marginTop: 8, justifyContent: 'flex-start', gap: 8 }}>
             <ThemeToggle />
+            <LanguageSwitcher />
           </div>
         </div>
       </nav>
 
       {/* Mobile top bar */}
       <div className="nav-mobile-bar">
-        <div className="nav-logo">🐾 Happy Adoptions</div>
+        <div className="nav-logo">🐾 {t('logo')}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <LanguageSwitcher />
           <ThemeToggle />
-          {role === 'volunteer' && !user && (
-            <Link href="/login" className="btn btn-sm btn-sun">Sign In</Link>
+          {!user && (
+            <Link href="/login" className="btn btn-sm btn-sun">{tc('signIn')}</Link>
           )}
         </div>
       </div>

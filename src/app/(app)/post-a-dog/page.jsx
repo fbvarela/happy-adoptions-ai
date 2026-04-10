@@ -6,20 +6,36 @@ import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import { resizeImage } from '@/lib/resizeImage';
 import Link from 'next/link';
+import { useTranslations } from '@/i18n/useTranslations';
+
+const BREEDS = [
+  'Mixed / Unknown', 'Labrador Retriever', 'German Shepherd', 'Golden Retriever',
+  'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Dachshund', 'Boxer',
+  'Siberian Husky', 'Chihuahua', 'Pit Bull / Staffy', 'Border Collie',
+  'Cocker Spaniel', 'Shih Tzu', 'Yorkshire Terrier', 'Doberman',
+  'Schnauzer', 'Dalmatian', 'Jack Russell Terrier', 'Pomeranian',
+  'Great Dane', 'Maltese', 'French Bulldog', 'Corgi', 'Other',
+];
+
+const TEMPERAMENT_ENTRIES = [
+  { key: 'goodWithKids', icon: '👶' },
+  { key: 'goodWithDogs', icon: '🐕' },
+  { key: 'goodWithCats', icon: '🐈' },
+  { key: 'isCalm', icon: '😌' },
+  { key: 'isPlayful', icon: '🎾' },
+  { key: 'isTrained', icon: '🎓' },
+  { key: 'tendsToEscape', icon: '🏃' },
+  { key: 'isFearful', icon: '😨' },
+];
 
 export default function PostADogPage() {
   const { user, loading } = useAuth();
   const { showToast } = useApp();
   const router = useRouter();
-
-  const BREEDS = [
-    'Mixed / Unknown', 'Labrador Retriever', 'German Shepherd', 'Golden Retriever',
-    'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Dachshund', 'Boxer',
-    'Siberian Husky', 'Chihuahua', 'Pit Bull / Staffy', 'Border Collie',
-    'Cocker Spaniel', 'Shih Tzu', 'Yorkshire Terrier', 'Doberman',
-    'Schnauzer', 'Dalmatian', 'Jack Russell Terrier', 'Pomeranian',
-    'Great Dane', 'Maltese', 'French Bulldog', 'Corgi', 'Other',
-  ];
+  const t = useTranslations('postDog');
+  const tc = useTranslations('common');
+  const tt = useTranslations('temperament');
+  const ta = useTranslations('assess');
 
   const [form, setForm] = useState({
     name: '', breed: '', sex: '', ageApprox: '', weight: '', color: '',
@@ -55,7 +71,7 @@ export default function PostADogPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name || !form.sex || !form.contactEmail) {
-      showToast('Name, sex, and contact email are required', 'error');
+      showToast(t('validationRequired'), 'error');
       return;
     }
     setSubmitting(true);
@@ -67,10 +83,10 @@ export default function PostADogPage() {
       });
       if (!res.ok) throw new Error('Failed to post');
       const dog = await res.json();
-      showToast('Dog posted successfully!');
+      showToast(t('postSuccess'));
       router.push(`/dogs/${dog.id}`);
     } catch {
-      showToast('Failed to post. Try again.', 'error');
+      showToast(t('postFailed'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -80,9 +96,9 @@ export default function PostADogPage() {
     return (
       <div className="page" style={{ textAlign: 'center', paddingTop: 60 }}>
         <div style={{ fontSize: '3rem', marginBottom: 16 }}>🔑</div>
-        <h2 style={{ color: 'var(--bark)', marginBottom: 12 }}>Sign in to post a dog</h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>You need an account to list a dog for adoption.</p>
-        <Link href="/login" className="btn btn-primary">Sign in →</Link>
+        <h2 style={{ color: 'var(--bark)', marginBottom: 12 }}>{t('signInRequired')}</h2>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{t('signInDescription')}</p>
+        <Link href="/login" className="btn btn-primary">{tc('signIn')} →</Link>
       </div>
     );
   }
@@ -90,81 +106,81 @@ export default function PostADogPage() {
   return (
     <div className="page">
       <div style={{ maxWidth: 600, margin: '0 auto' }}>
-        <h1 className="page-title">Post a dog for adoption</h1>
-        <p className="page-sub">List your dog independently — no shelter required.</p>
+        <h1 className="page-title">{t('pageTitle')}</h1>
+        <p className="page-sub">{t('pageDescription')}</p>
 
         <form onSubmit={handleSubmit}>
           <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-title">Basic info</div>
+            <div className="card-title">{t('basicInfo')}</div>
             <div className="grid2">
               <div className="field">
-                <label className="input-label">Name *</label>
+                <label className="input-label">{t('nameRequired')}</label>
                 <input className="input" type="text" value={form.name} onChange={e => set('name', e.target.value)} required />
               </div>
               <div className="field">
-                <label className="input-label">Breed (approx)</label>
+                <label className="input-label">{t('breedApprox')}</label>
                 <select className="input" value={form.breed} onChange={e => set('breed', e.target.value)}>
-                  <option value="">Select breed...</option>
+                  <option value="">{tc('selectBreed')}</option>
                   {BREEDS.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
             </div>
             <div className="grid2">
               <div className="field">
-                <label className="input-label">Sex *</label>
+                <label className="input-label">{t('sexRequired')}</label>
                 <select className="input" value={form.sex} onChange={e => set('sex', e.target.value)} required>
-                  <option value="">Select...</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="">{tc('select')}</option>
+                  <option value="male">{ta('sexMale')}</option>
+                  <option value="female">{ta('sexFemale')}</option>
                 </select>
               </div>
               <div className="field">
-                <label className="input-label">Age (approx)</label>
+                <label className="input-label">{ta('ageApprox')}</label>
                 <select className="input" value={form.ageApprox} onChange={e => set('ageApprox', e.target.value)}>
-                  <option value="">Select...</option>
-                  <option value="puppy">Puppy (under 1 year)</option>
-                  <option value="1">~1 year</option>
-                  <option value="2">~2 years</option>
-                  <option value="3">~3 years</option>
-                  <option value="4">~4 years</option>
-                  <option value="5">~5 years</option>
-                  <option value="6">~6 years</option>
-                  <option value="7">~7 years</option>
-                  <option value="8">~8 years</option>
-                  <option value="9">~9 years</option>
-                  <option value="10+">10+ years</option>
+                  <option value="">{tc('select')}</option>
+                  <option value="puppy">{ta('puppyUnder1')}</option>
+                  <option value="1">{ta('year1')}</option>
+                  <option value="2">{ta('year2')}</option>
+                  <option value="3">{ta('year3')}</option>
+                  <option value="4">{ta('year4')}</option>
+                  <option value="5">{ta('year5')}</option>
+                  <option value="6">{ta('year6')}</option>
+                  <option value="7">{ta('year7')}</option>
+                  <option value="8">{ta('year8')}</option>
+                  <option value="9">{ta('year9')}</option>
+                  <option value="10+">{ta('year10plus')}</option>
                 </select>
               </div>
             </div>
             <div className="grid2">
               <div className="field">
-                <label className="input-label">Weight (kg)</label>
+                <label className="input-label">{ta('weightKg')}</label>
                 <input className="input" type="number" min="0" step="0.1" value={form.weight} onChange={e => set('weight', e.target.value)} />
               </div>
               <div className="field">
-                <label className="input-label">Color</label>
-                <input className="input" type="text" placeholder="e.g. golden, black & white" value={form.color} onChange={e => set('color', e.target.value)} />
+                <label className="input-label">{t('colorLabel')}</label>
+                <input className="input" type="text" placeholder={t('colorPlaceholder')} value={form.color} onChange={e => set('color', e.target.value)} />
               </div>
             </div>
             <div className="field">
-              <label className="input-label">Origin</label>
+              <label className="input-label">{ta('origin')}</label>
               <select className="input" value={form.origin} onChange={e => set('origin', e.target.value)}>
-                <option value="">Select...</option>
-                <option value="street">Street / stray</option>
-                <option value="shelter">Shelter</option>
-                <option value="previous_owner">Previous owner</option>
+                <option value="">{tc('select')}</option>
+                <option value="street">{ta('originStreet')}</option>
+                <option value="shelter">{ta('originShelter')}</option>
+                <option value="previous_owner">{ta('originPreviousOwner')}</option>
               </select>
             </div>
             <div className="field">
-              <label className="input-label">Description</label>
-              <textarea className="input" rows={4} placeholder="Tell adopters about this dog's personality, history, and needs..." value={form.description} onChange={e => set('description', e.target.value)} />
+              <label className="input-label">{t('descriptionLabel')}</label>
+              <textarea className="input" rows={4} placeholder={t('descriptionPlaceholder')} value={form.description} onChange={e => set('description', e.target.value)} />
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-title">Photos</div>
+            <div className="card-title">{t('photos')}</div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: 12 }}>
-              Add up to 6 photos. Clear photos increase adoption chances significantly.
+              {t('photosDescription')}
             </p>
             {form.photos.length > 0 && (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
@@ -188,7 +204,7 @@ export default function PostADogPage() {
             {form.photos.length < 6 && (
               <label style={{ display: 'block', cursor: 'pointer' }}>
                 <div className="btn btn-ghost" style={{ width: '100%', justifyContent: 'center' }} tabIndex={-1}>
-                  + Add photos
+                  {t('addPhotos')}
                 </div>
                 <input type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotos} />
               </label>
@@ -196,44 +212,35 @@ export default function PostADogPage() {
           </div>
 
           <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-title">Temperament</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {[
-                { key: 'goodWithKids', label: '👶 Good with kids' },
-                { key: 'goodWithDogs', label: '🐕 Good with other dogs' },
-                { key: 'goodWithCats', label: '🐈 Good with cats' },
-                { key: 'isCalm',       label: '😌 Calm / low energy' },
-                { key: 'isPlayful',    label: '🎾 Playful / high energy' },
-                { key: 'isTrained',    label: '🎓 Already trained' },
-                { key: 'tendsToEscape', label: '🏃 Tendency to escape' },
-                { key: 'isFearful',    label: '😨 Fearful' },
-              ].map(({ key, label }) => (
+            <div className="card-title">{t('temperament')}</div>
+            <div className="grid2-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {TEMPERAMENT_ENTRIES.map(({ key, icon }) => (
                 <label key={key} className="checkbox-card">
                   <input type="checkbox" checked={!!form.temperament[key]} onChange={() => toggleTemp(key)} />
-                  <div className="card-content">{label}</div>
+                  <div className="card-content">{icon} {tt(key)}</div>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="card" style={{ marginBottom: 20 }}>
-            <div className="card-title">Contact & location</div>
+            <div className="card-title">{t('contactLocation')}</div>
             <div className="field">
-              <label className="input-label">Your location</label>
-              <input className="input" type="text" placeholder="City, Country" value={form.location} onChange={e => set('location', e.target.value)} />
+              <label className="input-label">{t('yourLocation')}</label>
+              <input className="input" type="text" placeholder={t('locationPlaceholder')} value={form.location} onChange={e => set('location', e.target.value)} />
             </div>
             <div className="field">
-              <label className="input-label">Contact email *</label>
+              <label className="input-label">{t('contactEmail')}</label>
               <input className="input" type="email" value={form.contactEmail} onChange={e => set('contactEmail', e.target.value)} required />
             </div>
             <div className="field">
-              <label className="input-label">Contact phone (optional)</label>
+              <label className="input-label">{t('contactPhone')}</label>
               <input className="input" type="tel" value={form.contactPhone} onChange={e => set('contactPhone', e.target.value)} />
             </div>
           </div>
 
           <button type="submit" className="btn btn-leaf" disabled={submitting} style={{ width: '100%', justifyContent: 'center', padding: '12px' }}>
-            {submitting ? 'Posting...' : 'Post dog for adoption →'}
+            {submitting ? t('posting') : `${t('postDog')} →`}
           </button>
         </form>
       </div>

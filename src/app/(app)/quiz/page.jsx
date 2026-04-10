@@ -9,36 +9,35 @@ import { LifestyleStep } from '@/components/quiz/steps/LifestyleStep';
 import { ExperienceStep } from '@/components/quiz/steps/ExperienceStep';
 import { PreferencesStep } from '@/components/quiz/steps/PreferencesStep';
 import { useAuth } from '@/context/AuthContext';
-
-// Contact (name) is first so we can personalise the rest of the quiz
-const STEPS = [
-  { key: 'contact',    component: ContactStep,    title: "Let's get started" },
-  { key: 'household',  component: HouseholdStep,  title: 'Your household' },
-  { key: 'housing',    component: HousingStep,    title: 'Your home' },
-  { key: 'lifestyle',  component: LifestyleStep,  title: 'Your lifestyle' },
-  { key: 'experience', component: ExperienceStep, title: 'Your experience' },
-  { key: 'preferences',component: PreferencesStep,title: 'Dog preferences' },
-];
-
-const DOG_FACTS = [
-  "Dogs have been human companions for over 15,000 years.",
-  "A dog's sense of smell is 10,000× stronger than a human's.",
-  "Every dog's nose print is unique — like a fingerprint.",
-  "Dogs can understand up to 250 words and gestures.",
-  "Dogs dream just like we do.",
-  "The Basenji is the only dog breed that doesn't bark.",
-];
+import { useTranslations } from '@/i18n/useTranslations';
+import { useLocale } from '@/context/LocaleContext';
 
 function QuizContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shelterId = searchParams.get('shelter');
   const { user } = useAuth();
+  const t = useTranslations('quiz');
+  const { locale } = useLocale();
+
+  const STEPS = [
+    { key: 'contact',    component: ContactStep,    titleKey: 'contact' },
+    { key: 'household',  component: HouseholdStep,  titleKey: 'household' },
+    { key: 'housing',    component: HousingStep,    titleKey: 'housing' },
+    { key: 'lifestyle',  component: LifestyleStep,  titleKey: 'lifestyle' },
+    { key: 'experience', component: ExperienceStep, titleKey: 'experience' },
+    { key: 'preferences',component: PreferencesStep,titleKey: 'preferences' },
+  ];
+
+  const dogFacts = t('dogFacts');
 
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(false);
-  const [dogFact] = useState(() => DOG_FACTS[Math.floor(Math.random() * DOG_FACTS.length)]);
+  const [dogFact] = useState(() => {
+    const facts = Array.isArray(dogFacts) ? dogFacts : [];
+    return facts[Math.floor(Math.random() * facts.length)] || '';
+  });
 
   // On mount: restore from sessionStorage, then overlay saved DB profile (if logged in)
   useEffect(() => {
@@ -102,6 +101,7 @@ function QuizContent() {
           profile: allAnswers,
           shelterId: shelterId || null,
           referencePhoto: allAnswers.referencePhoto || null,
+          locale,
         }),
       });
       const data = await res.json();
@@ -125,12 +125,12 @@ function QuizContent() {
       <div className="page" style={{ textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '3rem', marginBottom: 20 }}>🐕</div>
         <h2 style={{ color: 'var(--bark)', marginBottom: 12 }}>
-          {firstName ? `Finding your matches, ${firstName}…` : 'Finding your matches…'}
+          {firstName ? t('findingMatchesName', { name: firstName }) : t('findingMatches')}
         </h2>
-        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Our AI is analysing compatibility right now.</p>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{t('aiAnalysing')}</p>
         <div className="card" style={{ maxWidth: 380, margin: '0 auto 24px', background: 'var(--cream)' }}>
           <p style={{ fontSize: '0.85rem', fontStyle: 'italic', color: 'var(--text-muted)' }}>
-            <strong>Did you know?</strong> {dogFact}
+            <strong>{t('didYouKnow')}</strong> {dogFact}
           </p>
         </div>
         <div className="spinner" style={{ width: 40, height: 40, margin: '0 auto' }} />
@@ -144,7 +144,7 @@ function QuizContent() {
         {/* Personalised heading */}
         {firstName && currentStep > 0 && (
           <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: 8 }}>
-            Hi {firstName}! Step {currentStep + 1} of {STEPS.length} →
+            {t('hiStep', { name: firstName, step: currentStep + 1, total: STEPS.length })} →
           </p>
         )}
 
@@ -152,7 +152,7 @@ function QuizContent() {
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              {STEPS[currentStep].title}
+              {t(`steps.${STEPS[currentStep].titleKey}`)}
             </span>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{Math.round(progress)}%</span>
           </div>
@@ -174,7 +174,7 @@ function QuizContent() {
 
         {shelterId && (
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 12 }}>
-            Matching against dogs from this shelter
+            {t('matchingAgainstShelter')}
           </p>
         )}
       </div>

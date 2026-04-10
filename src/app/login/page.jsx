@@ -3,6 +3,8 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useRole } from '@/context/RoleContext';
+import { useTranslations } from '@/i18n/useTranslations';
+import { useLocale } from '@/context/LocaleContext';
 
 const enableTestLogin = process.env.NEXT_PUBLIC_ENABLE_TEST_LOGIN === 'true';
 
@@ -14,6 +16,8 @@ function LoginForm() {
   const router = useRouter();
   const authError = searchParams.get('error');
   const { role, setRole } = useRole();
+  const t = useTranslations('login');
+  const { locale } = useLocale();
 
   const handleTestLogin = async (e) => {
     e.preventDefault();
@@ -46,7 +50,7 @@ function LoginForm() {
       const res = await fetch('/api/auth/send-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim(), locale }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send link');
@@ -67,9 +71,9 @@ function LoginForm() {
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: '3rem', marginBottom: 8 }}>🐾</div>
           <h1 style={{ fontFamily: 'Fraunces, serif', fontSize: '1.8rem', color: 'var(--bark)', marginBottom: 6 }}>
-            Happy Adoptions AI
+            {t('title')}
           </h1>
-          <p style={{ color: 'var(--text-muted)' }}>Sign in to save your matches and profile.</p>
+          <p style={{ color: 'var(--text-muted)' }}>{t('subtitle')}</p>
         </div>
 
         {/* Role toggle */}
@@ -78,34 +82,34 @@ function LoginForm() {
             className={`btn btn-sm ${role === 'adopter' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setRole('adopter')}
           >
-            🏠 Adopter
+            🏠 {t('adopter')}
           </button>
           <button
             className={`btn btn-sm ${role === 'volunteer' ? 'btn-primary' : 'btn-ghost'}`}
             onClick={() => setRole('volunteer')}
           >
-            🤝 Volunteer
+            🤝 {t('volunteer')}
           </button>
         </div>
 
         <div className="card">
           {authError && (
             <div style={{ background: '#fef0e8', border: '1px solid var(--clay)', borderRadius: 'var(--radius-sm)', padding: '10px 14px', marginBottom: 16, color: 'var(--clay)', fontSize: '0.9rem' }}>
-              {authError === 'expired_link' ? 'This link has expired. Request a new one.' : 'Sign-in failed. Please try again.'}
+              {authError === 'expired_link' ? t('expiredLink') : t('signInFailed')}
             </div>
           )}
 
           {enableTestLogin && (
             <form onSubmit={handleTestLogin} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--line)' }}>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginBottom: 12 }}>
-                🛠 Test login (dev only)
+                🛠 {t('testLogin')}
               </p>
               <div className="field" style={{ marginBottom: 12 }}>
-                <label className="input-label" htmlFor="testEmail">Email</label>
+                <label className="input-label" htmlFor="testEmail">{t('email')}</label>
                 <input id="testEmail" name="testEmail" type="email" className="input" required />
               </div>
               <div className="field" style={{ marginBottom: 12 }}>
-                <label className="input-label" htmlFor="testPassword">Password</label>
+                <label className="input-label" htmlFor="testPassword">{t('password')}</label>
                 <input id="testPassword" name="testPassword" type="password" className="input" required />
               </div>
               {status === 'error' && (
@@ -117,7 +121,7 @@ function LoginForm() {
                 disabled={status === 'loading'}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
-                {status === 'loading' ? 'Signing in...' : 'Sign in (test user)'}
+                {status === 'loading' ? t('signingIn') : t('signInTestUser')}
               </button>
             </form>
           )}
@@ -125,22 +129,23 @@ function LoginForm() {
           {status === 'sent' ? (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📬</div>
-              <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>Check your email</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                We sent a sign-in link to <strong>{email}</strong>. It expires in 1 hour.
-              </p>
+              <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>{t('checkEmail')}</h3>
+              <p
+                style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}
+                dangerouslySetInnerHTML={{ __html: t('sentLink', { email }) }}
+              />
               <button className="btn btn-ghost btn-sm" style={{ marginTop: 16 }} onClick={() => setStatus('idle')}>
-                Try a different email
+                {t('tryDifferentEmail')}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="field">
-                <label className="input-label">Email address</label>
+                <label className="input-label">{t('emailAddress')}</label>
                 <input
                   className="input"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
@@ -156,14 +161,14 @@ function LoginForm() {
                 disabled={status === 'loading'}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
-                {status === 'loading' ? 'Sending...' : 'Send magic link →'}
+                {status === 'loading' ? t('sending') : `${t('sendMagicLink')} →`}
               </button>
             </form>
           )}
         </div>
 
         <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 16 }}>
-          No password needed. We&apos;ll email you a one-click sign-in link.
+          {t('noPasswordNeeded')}
         </p>
       </div>
     </div>

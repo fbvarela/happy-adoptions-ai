@@ -5,34 +5,28 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
-
-const FORMAT_VALUE = {
-  house: 'House with yard', house_no_yard: 'House without yard', apartment: 'Apartment', condo: 'Condo / townhouse',
-  large_yard: 'Large fenced yard', small_yard: 'Small yard or garden', balcony: 'Balcony only', none: 'No outdoor space',
-  sedentary: 'Low activity', moderate: 'Moderate — daily walks', active: 'Active — runs, hikes', very_active: 'Very active — outdoors daily',
-  home_all_day: 'Work from home', part_time: 'Out part-time', full_time_out: 'Out full-time', frequent_travel: 'Frequent traveler',
-  basic: 'Basic commands', experienced: 'Experienced trainer',
-  small: 'Small (under 10kg)', medium: 'Medium (10–25kg)', large: 'Large (25kg+)',
-  puppy: 'Puppy (under 1 year)', young: 'Young (1–3 years)', adult: 'Adult (3–8 years)', senior: 'Senior (8+ years)',
-  low: 'Low energy', high: 'High energy',
-};
-
-function formatValue(val) {
-  if (val === true) return 'Yes';
-  if (val === false) return 'No';
-  if (Array.isArray(val)) return val.join(', ');
-  if (typeof val === 'number') return String(val);
-  return FORMAT_VALUE[val] || val || '—';
-}
+import { useTranslations } from '@/i18n/useTranslations';
 
 function ProfileSection({ title, data, labels }) {
   if (!data || Object.keys(data).length === 0) return null;
   const entries = Object.entries(labels).filter(([key]) => data[key] !== undefined && data[key] !== '' && data[key] !== null);
   if (entries.length === 0) return null;
+
+  const tf = useTranslations('formatValues');
+
+  function formatValue(val) {
+    if (val === true) return tf('yes') || 'Yes';
+    if (val === false) return tf('no') || 'No';
+    if (Array.isArray(val)) return val.join(', ');
+    if (typeof val === 'number') return String(val);
+    const translated = tf(val);
+    return (translated && translated !== `formatValues.${val}`) ? translated : (val || '—');
+  }
+
   return (
     <div className="card">
       <div className="card-title">{title}</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginTop: 8 }}>
+      <div className="grid2-mobile" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginTop: 8 }}>
         {entries.map(([key, label]) => (
           <div key={key}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{label}</span>
@@ -48,6 +42,8 @@ export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const { showToast } = useApp();
   const router = useRouter();
+  const t = useTranslations('dashboard');
+  const tc = useTranslations('common');
 
   const [profile, setProfile] = useState(null);
   const [favorites, setFavorites] = useState([]);
@@ -70,9 +66,9 @@ export default function DashboardPage() {
   }
 
   const TABS = [
-    { id: 'profile',   label: '👤 Profile' },
-    { id: 'favorites', label: `❤️ Favorites (${favorites.length})` },
-    { id: 'listings',  label: `📋 My listings (${myListings.length})` },
+    { id: 'profile',   label: `👤 ${t('profile')}` },
+    { id: 'favorites', label: `❤️ ${t('favorites')} (${favorites.length})` },
+    { id: 'listings',  label: `📋 ${t('myListings')} (${myListings.length})` },
   ];
 
   return (
@@ -82,11 +78,11 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
           <div>
             <h1 className="page-title" style={{ marginBottom: 4 }}>
-              {profile?.profile_data?.contact?.name ? `Hi, ${profile.profile_data.contact.name}!` : 'My Profile'}
+              {profile?.profile_data?.contact?.name ? t('hiName', { name: profile.profile_data.contact.name }) : t('myProfile')}
             </h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{user.email}</p>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={logout}>Sign out</button>
+          <button className="btn btn-ghost btn-sm" onClick={logout}>{tc('signOut')}</button>
         </div>
 
         {/* Tabs */}
@@ -114,32 +110,32 @@ export default function DashboardPage() {
           <div>
             {profile?.profile_data ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
-                <ProfileSection title="Contact" data={profile.profile_data.contact} labels={{
-                  name: 'Name', email: 'Email', location: 'Location', notes: 'Notes',
+                <ProfileSection title={t('contact')} data={profile.profile_data.contact} labels={{
+                  name: t('name'), email: t('email'), location: t('location'), notes: t('notes'),
                 }} />
-                <ProfileSection title="Household" data={profile.profile_data.household} labels={{
-                  hasKids: 'Children at home', kidsAges: 'Kids ages', hasDogs: 'Other dogs', dogCount: 'Number of dogs', hasCats: 'Cats at home', otherPets: 'Other pets',
+                <ProfileSection title={t('household')} data={profile.profile_data.household} labels={{
+                  hasKids: t('childrenAtHome'), kidsAges: t('kidsAges'), hasDogs: t('otherDogs'), dogCount: t('numberOfDogs'), hasCats: t('catsAtHome'), otherPets: t('otherPets'),
                 }} />
-                <ProfileSection title="Housing" data={profile.profile_data.housing} labels={{
-                  type: 'Housing type', outdoorSpace: 'Outdoor space', hasAllergies: 'Dog allergies', rentalRestrictions: 'Rental restrictions', rentalDetails: 'Restriction details',
+                <ProfileSection title={t('housing')} data={profile.profile_data.housing} labels={{
+                  type: t('housingType'), outdoorSpace: t('outdoorSpace'), hasAllergies: t('dogAllergies'), rentalRestrictions: t('rentalRestrictions'), rentalDetails: t('restrictionDetails'),
                 }} />
-                <ProfileSection title="Lifestyle" data={profile.profile_data.lifestyle} labels={{
-                  activityLevel: 'Activity level', workSchedule: 'Work schedule', aloneTimeHours: 'Hours alone per day', hasDogWalker: 'Dog walker / daycare',
+                <ProfileSection title={t('lifestyle')} data={profile.profile_data.lifestyle} labels={{
+                  activityLevel: t('activityLevel'), workSchedule: t('workSchedule'), aloneTimeHours: t('hoursAlone'), hasDogWalker: t('dogWalker'),
                 }} />
-                <ProfileSection title="Experience" data={profile.profile_data.experience} labels={{
-                  firstTimeOwner: 'First-time owner', previousDogs: 'Previous dogs', trainingExperience: 'Training experience', openToSpecialNeeds: 'Open to special needs',
+                <ProfileSection title={t('experience')} data={profile.profile_data.experience} labels={{
+                  firstTimeOwner: t('firstTimeOwner'), previousDogs: t('previousDogs'), trainingExperience: t('trainingExperience'), openToSpecialNeeds: t('openToSpecialNeeds'),
                 }} />
-                <ProfileSection title="Preferences" data={profile.profile_data.preferences} labels={{
-                  size: 'Preferred size', age: 'Preferred age', energyLevel: 'Energy level', mustBeGoodWithKids: 'Must be good with kids', mustBeGoodWithDogs: 'Must be good with dogs', mustBeGoodWithCats: 'Must be good with cats', mustBeTrained: 'Must be trained',
+                <ProfileSection title={t('preferences')} data={profile.profile_data.preferences} labels={{
+                  size: t('preferredSize'), age: t('preferredAge'), energyLevel: t('energyLevel'), mustBeGoodWithKids: t('mustGoodKids'), mustBeGoodWithDogs: t('mustGoodDogs'), mustBeGoodWithCats: t('mustGoodCats'), mustBeTrained: t('mustTrained'),
                 }} />
-                <Link href="/quiz" className="btn btn-ghost btn-sm">Retake quiz to update</Link>
+                <Link href="/quiz" className="btn btn-ghost btn-sm">{t('retakeQuiz')}</Link>
               </div>
             ) : (
               <div className="card" style={{ textAlign: 'center', background: 'var(--cream)' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 12 }}>📋</div>
-                <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>No profile yet</h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>Take the quiz to build your adopter profile and get matched with dogs.</p>
-                <Link href="/quiz" className="btn btn-primary">Start the quiz →</Link>
+                <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>{t('noProfileYet')}</h3>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('noProfileDesc')}</p>
+                <Link href="/quiz" className="btn btn-primary">{t('startQuiz')} →</Link>
               </div>
             )}
           </div>
@@ -151,8 +147,8 @@ export default function DashboardPage() {
             {favorites.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', background: 'var(--cream)' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 12 }}>🤍</div>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>No saved dogs yet. Browse listings and save the ones you like.</p>
-                <Link href="/quiz" className="btn btn-primary">Find matches →</Link>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('noFavorites')}</p>
+                <Link href="/quiz" className="btn btn-primary">{t('findMatches')} →</Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -161,8 +157,8 @@ export default function DashboardPage() {
                     <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
                       <div className="dog-avatar" style={{ fontSize: '1.8rem' }}>🐕</div>
                       <div>
-                        <div className="dog-name">{fav.name || 'Unknown'}</div>
-                        <div className="dog-meta">{fav.breed || 'Mixed'} · {fav.sex}</div>
+                        <div className="dog-name">{fav.name || tc('unknown')}</div>
+                        <div className="dog-meta">{fav.breed || tc('mixed')} · {fav.sex}</div>
                       </div>
                       <span style={{ marginLeft: 'auto', fontSize: '1.3rem', color: 'var(--text-muted)' }}>→</span>
                     </div>
@@ -177,13 +173,13 @@ export default function DashboardPage() {
         {activeTab === 'listings' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <Link href="/post-a-dog" className="btn btn-primary btn-sm">+ Post a dog</Link>
+              <Link href="/post-a-dog" className="btn btn-primary btn-sm">{t('postADog')}</Link>
             </div>
             {myListings.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', background: 'var(--cream)' }}>
                 <div style={{ fontSize: '2rem', marginBottom: 12 }}>📋</div>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>You haven&apos;t posted any dogs yet.</p>
-                <Link href="/post-a-dog" className="btn btn-primary">Post a dog →</Link>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>{t('noListings')}</p>
+                <Link href="/post-a-dog" className="btn btn-primary">{t('postDog')} →</Link>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -192,12 +188,12 @@ export default function DashboardPage() {
                     <div className="dog-avatar" style={{ fontSize: '1.8rem' }}>🐕</div>
                     <div style={{ flex: 1 }}>
                       <div className="dog-name">{dog.name}</div>
-                      <div className="dog-meta">{dog.breed || 'Mixed'} · {dog.sex}</div>
+                      <div className="dog-meta">{dog.breed || tc('mixed')} · {dog.sex}</div>
                     </div>
                     <span className={`badge ${dog.status === 'available' ? 'badge-leaf' : 'badge-clay'}`}>
                       {dog.status}
                     </span>
-                    <Link href={`/dogs/${dog.id}`} className="btn btn-ghost btn-sm">View</Link>
+                    <Link href={`/dogs/${dog.id}`} className="btn btn-ghost btn-sm">{tc('view')}</Link>
                   </div>
                 ))}
               </div>

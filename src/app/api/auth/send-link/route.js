@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth/session';
 import { sql } from '@/lib/db';
 
 export async function POST(request) {
-  const { email } = await request.json();
+  const { email, locale } = await request.json();
 
   if (!email?.trim()) {
     return Response.json({ error: 'Email is required' }, { status: 400 });
@@ -38,7 +38,7 @@ export async function POST(request) {
 
   try {
     const magicLink = await generateMagicLink(normalizedEmail, origin);
-    await sendMagicLinkEmail(normalizedEmail, magicLink);
+    await sendMagicLinkEmail(normalizedEmail, magicLink, locale || 'en');
     return Response.json({ message: 'Magic link sent — check your email.' });
   } catch (err) {
     console.error('[auth/send-link]', err.message);

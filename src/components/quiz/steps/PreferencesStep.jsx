@@ -2,12 +2,15 @@
 
 import { useState, useRef } from 'react';
 import { resizeImage } from '@/lib/resizeImage';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export function PreferencesStep({ data, onNext, onBack, firstName }) {
   const [form, setForm] = useState(data?.preferences || {});
   const [photo, setPhoto] = useState(data?.referencePhoto || null);
   const fileRef = useRef(null);
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const t = useTranslations('quiz.preferences');
+  const tc = useTranslations('common');
 
   const handlePhoto = (e) => {
     const file = e.target.files?.[0];
@@ -27,64 +30,64 @@ export function PreferencesStep({ data, onNext, onBack, firstName }) {
 
   return (
     <div className="quiz-step">
-      <h3>Dog preferences</h3>
-      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>Any preferences? We'll factor these in but won't limit your matches.</p>
+      <h3>{t('title')}</h3>
+      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>{t('subtitle')}</p>
 
       <div className="field">
-        <label className="input-label">Preferred size</label>
+        <label className="input-label">{t('preferredSize')}</label>
         <select className="input" value={form.size || ''} onChange={e => set('size', e.target.value)}>
-          <option value="">No preference</option>
-          <option value="small">Small (under 10kg)</option>
-          <option value="medium">Medium (10–25kg)</option>
-          <option value="large">Large (25kg+)</option>
+          <option value="">{tc('noPreference')}</option>
+          <option value="small">{t('small')}</option>
+          <option value="medium">{t('medium')}</option>
+          <option value="large">{t('large')}</option>
         </select>
       </div>
 
       <div className="field">
-        <label className="input-label">Preferred age</label>
+        <label className="input-label">{t('preferredAge')}</label>
         <select className="input" value={form.age || ''} onChange={e => set('age', e.target.value)}>
-          <option value="">No preference</option>
-          <option value="puppy">Puppy (under 1 year)</option>
-          <option value="young">Young (1–3 years)</option>
-          <option value="adult">Adult (3–8 years)</option>
-          <option value="senior">Senior (8+ years)</option>
+          <option value="">{tc('noPreference')}</option>
+          <option value="puppy">{t('puppy')}</option>
+          <option value="young">{t('young')}</option>
+          <option value="adult">{t('adult')}</option>
+          <option value="senior">{t('senior')}</option>
         </select>
       </div>
 
       <div className="field">
-        <label className="input-label">Energy level preference</label>
+        <label className="input-label">{t('energyLevel')}</label>
         <select className="input" value={form.energyLevel || ''} onChange={e => set('energyLevel', e.target.value)}>
-          <option value="">No preference</option>
-          <option value="low">Low energy / calm</option>
-          <option value="medium">Medium energy</option>
-          <option value="high">High energy / playful</option>
+          <option value="">{tc('noPreference')}</option>
+          <option value="low">{t('lowEnergy')}</option>
+          <option value="medium">{t('mediumEnergy')}</option>
+          <option value="high">{t('highEnergy')}</option>
         </select>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <label className="checkbox-card">
           <input type="checkbox" checked={!!form.mustBeGoodWithKids} onChange={e => set('mustBeGoodWithKids', e.target.checked)} />
-          <div className="card-content">Must be good with kids</div>
+          <div className="card-content">{t('goodWithKids')}</div>
         </label>
         <label className="checkbox-card">
           <input type="checkbox" checked={!!form.mustBeGoodWithDogs} onChange={e => set('mustBeGoodWithDogs', e.target.checked)} />
-          <div className="card-content">Must be good with other dogs</div>
+          <div className="card-content">{t('goodWithDogs')}</div>
         </label>
         <label className="checkbox-card">
           <input type="checkbox" checked={!!form.mustBeGoodWithCats} onChange={e => set('mustBeGoodWithCats', e.target.checked)} />
-          <div className="card-content">Must be good with cats</div>
+          <div className="card-content">{t('goodWithCats')}</div>
         </label>
         <label className="checkbox-card">
           <input type="checkbox" checked={!!form.mustBeTrained} onChange={e => set('mustBeTrained', e.target.checked)} />
-          <div className="card-content">Must already be trained</div>
+          <div className="card-content">{t('mustBeTrained')}</div>
         </label>
       </div>
 
       {/* Optional reference photo */}
       <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--line)' }}>
-        <label className="input-label">Have a dog in mind? Upload a photo (optional)</label>
+        <label className="input-label">{t('referencePhoto')}</label>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 10 }}>
-          We&apos;ll use AI to find visually similar dogs in our listings.
+          {t('referencePhotoDesc')}
         </p>
         {photo ? (
           <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
@@ -102,16 +105,16 @@ export function PreferencesStep({ data, onNext, onBack, firstName }) {
           </div>
         ) : (
           <label style={{ display: 'block', cursor: 'pointer' }}>
-            <div className="btn btn-ghost btn-sm" tabIndex={-1}>📷 Upload photo</div>
+            <div className="btn btn-ghost btn-sm" tabIndex={-1}>📷 {t('uploadPhoto')}</div>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhoto} />
           </label>
         )}
       </div>
 
       <div className="modal-footer">
-        <button className="btn btn-ghost" onClick={onBack}>Back</button>
+        <button className="btn btn-ghost" onClick={onBack}>{tc('back')}</button>
         <button className="btn btn-leaf" onClick={() => onNext({ preferences: form, referencePhoto: photo || null })}>
-          {firstName ? `Find my matches, ${firstName} →` : 'Find my matches →'}
+          {firstName ? `${t('findMatchesName', { name: firstName })} →` : `${t('findMatches')} →`}
         </button>
       </div>
     </div>

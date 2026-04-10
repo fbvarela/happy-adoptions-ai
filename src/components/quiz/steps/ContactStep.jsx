@@ -1,27 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from '@/i18n/useTranslations';
 
-// ContactStep is now FIRST in the quiz so we can personalize from step 2 onwards.
-// It collects name, email, and location — all optional except name for personalization.
 export function ContactStep({ data, onNext, onBack }) {
   const [form, setForm] = useState(data?.contact || {});
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const t = useTranslations('quiz.contact');
+  const tc = useTranslations('common');
 
   return (
     <div className="quiz-step">
-      <h3>Let&apos;s get started</h3>
+      <h3>{t('title')}</h3>
       <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>
-        Tell us a little about yourself so we can personalise your experience.
-        Everything is optional — fill in what you&apos;re comfortable with.
+        {t('intro')}
       </p>
 
       <div className="field">
-        <label className="input-label">Your name</label>
+        <label className="input-label">{t('yourName')}</label>
         <input
           className="input"
           type="text"
-          placeholder="First name"
+          placeholder={t('firstName')}
           value={form.name || ''}
           onChange={e => set('name', e.target.value)}
           autoFocus
@@ -29,44 +29,44 @@ export function ContactStep({ data, onNext, onBack }) {
       </div>
 
       <div className="field">
-        <label className="input-label">Email (optional)</label>
+        <label className="input-label">{t('emailOptional')}</label>
         <input
           className="input"
           type="email"
-          placeholder="you@example.com"
+          placeholder={t('emailPlaceholder')}
           value={form.email || ''}
           onChange={e => set('email', e.target.value)}
         />
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4, display: 'block' }}>
-          Shelters can contact you about your matches.
+          {t('emailHelper')}
         </span>
       </div>
 
       <div className="field">
-        <label className="input-label">City / region (optional)</label>
+        <label className="input-label">{t('cityRegion')}</label>
         <input
           className="input"
           type="text"
-          placeholder="e.g. Lisbon, Portugal"
+          placeholder={t('cityPlaceholder')}
           value={form.location || ''}
           onChange={e => set('location', e.target.value)}
         />
       </div>
 
       <div className="field">
-        <label className="input-label">Anything else we should know? (optional)</label>
+        <label className="input-label">{t('anythingElse')}</label>
         <textarea
           className="input"
-          placeholder="Any extra info about your home, schedule, or what you&apos;re looking for..."
+          placeholder={t('anythingElsePlaceholder')}
           value={form.notes || ''}
           onChange={e => set('notes', e.target.value)}
         />
       </div>
 
       <div className="modal-footer">
-        <button className="btn btn-ghost" onClick={onBack}>Back</button>
+        <button className="btn btn-ghost" onClick={onBack}>{tc('back')}</button>
         <button className="btn btn-primary" onClick={() => onNext({ contact: form })}>
-          {form.name ? `Let's go, ${form.name.split(' ')[0]}! →` : 'Continue →'}
+          {form.name ? `${t('letsGoName', { name: form.name.split(' ')[0] })} →` : `${t('continueArrow')} →`}
         </button>
       </div>
     </div>

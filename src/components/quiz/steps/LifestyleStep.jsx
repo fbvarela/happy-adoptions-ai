@@ -1,40 +1,43 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from '@/i18n/useTranslations';
 
 export function LifestyleStep({ data, onNext, onBack }) {
   const [form, setForm] = useState(data?.lifestyle || {});
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+  const t = useTranslations('quiz.lifestyle');
+  const tc = useTranslations('common');
 
   return (
     <div className="quiz-step">
-      <h3>Your lifestyle</h3>
-      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>How do you spend your days?</p>
+      <h3>{t('title')}</h3>
+      <p style={{ color: 'var(--text-muted)', marginTop: -8 }}>{t('subtitle')}</p>
 
       <div className="field">
-        <label className="input-label">Activity level</label>
+        <label className="input-label">{t('activityLevel')}</label>
         <select className="input" value={form.activityLevel || ''} onChange={e => set('activityLevel', e.target.value)}>
-          <option value="">Select...</option>
-          <option value="sedentary">Mostly at home / low activity</option>
-          <option value="moderate">Moderate — daily walks</option>
-          <option value="active">Active — runs, hikes</option>
-          <option value="very_active">Very active — outdoors daily</option>
+          <option value="">{tc('select')}</option>
+          <option value="sedentary">{t('sedentary')}</option>
+          <option value="moderate">{t('moderate')}</option>
+          <option value="active">{t('active')}</option>
+          <option value="very_active">{t('veryActive')}</option>
         </select>
       </div>
 
       <div className="field">
-        <label className="input-label">Work schedule</label>
+        <label className="input-label">{t('workSchedule')}</label>
         <select className="input" value={form.workSchedule || ''} onChange={e => set('workSchedule', e.target.value)}>
-          <option value="">Select...</option>
-          <option value="home_all_day">Work from home / stay at home</option>
-          <option value="part_time">Out of home part-time</option>
-          <option value="full_time_out">Out of home full-time</option>
-          <option value="frequent_travel">Frequent traveler</option>
+          <option value="">{tc('select')}</option>
+          <option value="home_all_day">{t('homeAllDay')}</option>
+          <option value="part_time">{t('partTime')}</option>
+          <option value="full_time_out">{t('fullTimeOut')}</option>
+          <option value="frequent_travel">{t('frequentTravel')}</option>
         </select>
       </div>
 
       <div className="field">
-        <label className="input-label">Hours dog would be alone per day</label>
+        <label className="input-label">{t('hoursAlone')}</label>
         <input
           className="input" type="number" min="0" max="24"
           value={form.aloneTimeHours ?? ''}
@@ -44,12 +47,12 @@ export function LifestyleStep({ data, onNext, onBack }) {
 
       <label className="checkbox-card">
         <input type="checkbox" checked={!!form.hasDogWalker} onChange={e => set('hasDogWalker', e.target.checked)} />
-        <div className="card-content"><span>🦮</span><span>Will use a dog walker or doggy daycare</span></div>
+        <div className="card-content"><span>🦮</span><span>{t('dogWalker')}</span></div>
       </label>
 
       <div className="modal-footer">
-        <button className="btn btn-ghost" onClick={onBack}>Back</button>
-        <button className="btn btn-primary" onClick={() => onNext({ lifestyle: form })}>Continue</button>
+        <button className="btn btn-ghost" onClick={onBack}>{tc('back')}</button>
+        <button className="btn btn-primary" onClick={() => onNext({ lifestyle: form })}>{tc('continue')}</button>
       </div>
     </div>
   );
