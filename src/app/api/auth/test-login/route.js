@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
-import { getSession } from '@/lib/auth/session';
+import { getSessionForResponse } from '@/lib/auth/session';
 import { getEnv } from '@/lib/env';
 
 export async function POST(request) {
@@ -27,12 +27,13 @@ export async function POST(request) {
     `;
     const user = users[0];
 
-    const session = await getSession();
+    const response = NextResponse.json({ ok: true });
+    const session = await getSessionForResponse(request, response);
     session.userId = user.id;
     session.email = user.email;
     await session.save();
 
-    return NextResponse.json({ ok: true });
+    return response;
   } catch (err) {
     console.error('[auth/test-login]', err);
     return NextResponse.json({ error: err.message }, { status: 500 });

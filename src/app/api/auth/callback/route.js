@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifyMagicLink } from '@/lib/auth/magic-link';
-import { getSession } from '@/lib/auth/session';
+import { getSessionForResponse } from '@/lib/auth/session';
 
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
@@ -18,12 +18,13 @@ export async function GET(request) {
       return NextResponse.redirect(`${origin}/login?error=expired_link`);
     }
 
-    const session = await getSession();
+    const response = NextResponse.redirect(`${origin}/dashboard`);
+    const session = await getSessionForResponse(request, response);
     session.userId = user.id;
     session.email = user.email;
     await session.save();
 
-    return NextResponse.redirect(`${origin}/dashboard`);
+    return response;
   } catch (err) {
     console.error('[auth/callback]', err.message);
     return NextResponse.redirect(`${origin}/login?error=auth_failed`);
