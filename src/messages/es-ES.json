@@ -401,6 +401,8 @@
     "ignore": "Si no has solicitado esto, puedes ignorar este email."
   },
   "formatValues": {
+    "yes": "Si",
+    "no": "No",
     "house": "Casa con jardin",
     "house_no_yard": "Casa sin jardin",
     "apartment": "Piso",
