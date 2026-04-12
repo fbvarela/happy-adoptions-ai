@@ -20,6 +20,13 @@ export async function getSession() {
   return getIronSession(cookieStore, getSessionOptions());
 }
 
+// Use when the handler returns a response it constructed itself (NextResponse.json,
+// NextResponse.redirect, etc.). Mutations via next/headers cookies() do not attach
+// Set-Cookie to a response you return manually, so bind the session to (req, res) instead.
+export function getSessionForResponse(request, response) {
+  return getIronSession(request, response, getSessionOptions());
+}
+
 export async function requireAuth() {
   const session = await getSession();
   if (!session.userId) {
