@@ -401,6 +401,8 @@
     "ignore": "If you did not request this, you can safely ignore this email."
   },
   "formatValues": {
+    "yes": "Yes",
+    "no": "No",
     "house": "House with yard",
     "house_no_yard": "House without yard",
     "apartment": "Apartment",
