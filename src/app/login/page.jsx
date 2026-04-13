@@ -34,7 +34,7 @@ function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Test login failed.');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err) {
       setErrorMsg(err.message);
       setStatus('error');
