@@ -6,11 +6,11 @@ import { useRole } from '@/context/RoleContext';
 import { useTranslations } from '@/i18n/useTranslations';
 import { useLocale } from '@/context/LocaleContext';
 
-const enableTestLogin = process.env.NEXT_PUBLIC_ENABLE_TEST_LOGIN === 'true';
+const enableDevAuth = process.env.NEXT_PUBLIC_ENABLE_TEST_LOGIN === 'true';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | loading | sent | error
+  const [status, setStatus] = useState('idle'); // idle | loading | sent | reset-sent | error
   const [errorMsg, setErrorMsg] = useState('');
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -19,21 +19,47 @@ function LoginForm() {
   const t = useTranslations('login');
   const { locale } = useLocale();
 
-  const handleTestLogin = async (e) => {
+  const [devMode, setDevMode] = useState('signin'); // signin | signup | reset
+  const [devEmail, setDevEmail] = useState('');
+  const [devPassword, setDevPassword] = useState('');
+
+  const setDevModeSafe = (mode) => {
+    setDevMode(mode);
+    setErrorMsg('');
+    setStatus('idle');
+  };
+
+  const handleDevAuth = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setStatus('loading');
-    const form = e.currentTarget;
-    const testEmail = form.elements.namedItem('testEmail').value;
-    const testPassword = form.elements.namedItem('testPassword').value;
+
+    if (devMode === 'reset') {
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: devEmail }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error ?? 'Could not send reset email');
+        setStatus('reset-sent');
+      } catch (err) {
+        setErrorMsg(err.message);
+        setStatus('error');
+      }
+      return;
+    }
+
     try {
-      const res = await fetch('/api/auth/test-login', {
+      const endpoint = devMode === 'signup' ? '/api/auth/dev-signup' : '/api/auth/signin-password';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: testEmail, password: testPassword }),
+        body: JSON.stringify({ email: devEmail, password: devPassword }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Test login failed.');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? 'Authentication failed');
       window.location.href = '/dashboard';
     } catch (err) {
       setErrorMsg(err.message);
@@ -99,34 +125,168 @@ function LoginForm() {
             </div>
           )}
 
-          {enableTestLogin && (
-            <form onSubmit={handleTestLogin} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--line)' }}>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500, marginBottom: 12 }}>
-                🛠 {t('testLogin')}
+          {enableDevAuth && status === 'reset-sent' ? (
+            <div style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📬</div>
+              <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>Check your email</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                If an account exists for <strong>{devEmail}</strong>, we sent a password-reset link.
               </p>
-              <div className="field" style={{ marginBottom: 12 }}>
-                <label className="input-label" htmlFor="testEmail">{t('email')}</label>
-                <input id="testEmail" name="testEmail" type="email" className="input" required />
+              <button
+                className="btn btn-ghost btn-sm"
+                style={{ marginTop: 16 }}
+                onClick={() => { setStatus('idle'); setDevModeSafe('signin'); setDevPassword(''); }}
+              >
+                Back to sign in
+              </button>
+            </div>
+          ) : enableDevAuth ? (
+            <form onSubmit={handleDevAuth}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: 8,
+                  padding: 4,
+                  marginBottom: 16,
+                  border: '1px solid var(--line)',
+                  borderRadius: 10,
+                  background: 'var(--bg)',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setDevModeSafe('signin')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    fontWeight: 500,
+                    fontSize: '0.85rem',
+                    background: devMode === 'signin' ? 'var(--surface, #fff)' : 'transparent',
+                    color: devMode === 'signin' ? 'var(--bark)' : 'var(--text-muted)',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDevModeSafe('signup')}
+                  style={{
+                    flex: 1,
+                    padding: '6px 12px',
+                    borderRadius: 6,
+                    fontWeight: 500,
+                    fontSize: '0.85rem',
+                    background: devMode === 'signup' ? 'var(--surface, #fff)' : 'transparent',
+                    color: devMode === 'signup' ? 'var(--bark)' : 'var(--text-muted)',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Create account
+                </button>
               </div>
+
               <div className="field" style={{ marginBottom: 12 }}>
-                <label className="input-label" htmlFor="testPassword">{t('password')}</label>
-                <input id="testPassword" name="testPassword" type="password" className="input" required />
+                <label className="input-label" htmlFor="devEmail">{t('email')}</label>
+                <input
+                  id="devEmail"
+                  name="devEmail"
+                  type="email"
+                  autoComplete="email"
+                  className="input"
+                  placeholder="you@example.com"
+                  required
+                  value={devEmail}
+                  onChange={(e) => { setDevEmail(e.target.value); if (status === 'error') setStatus('idle'); }}
+                />
               </div>
-              {status === 'error' && (
+
+              {devMode !== 'reset' && (
+                <div className="field" style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <label className="input-label" htmlFor="devPassword">{t('password')}</label>
+                    {devMode === 'signin' && (
+                      <button
+                        type="button"
+                        onClick={() => setDevModeSafe('reset')}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          fontSize: '0.75rem',
+                          color: 'var(--text-muted)',
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    id="devPassword"
+                    name="devPassword"
+                    type="password"
+                    autoComplete={devMode === 'signup' ? 'new-password' : 'current-password'}
+                    className="input"
+                    required
+                    minLength={6}
+                    value={devPassword}
+                    onChange={(e) => { setDevPassword(e.target.value); if (status === 'error') setStatus('idle'); }}
+                  />
+                  {devMode === 'signup' && (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                      At least 6 characters.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {devMode === 'reset' && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 12 }}>
+                  Enter your account email and we&apos;ll send a link to set a new password.
+                </p>
+              )}
+
+              {status === 'error' && errorMsg && (
                 <p style={{ color: 'var(--clay)', fontSize: '0.85rem', marginBottom: 12 }}>{errorMsg}</p>
               )}
-              <button
-                className="btn btn-primary"
-                type="submit"
-                disabled={status === 'loading'}
-                style={{ width: '100%', justifyContent: 'center' }}
-              >
-                {status === 'loading' ? t('signingIn') : t('signInTestUser')}
-              </button>
-            </form>
-          )}
 
-          {status === 'sent' ? (
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+                disabled={status === 'loading'}
+              >
+                {status === 'loading'
+                  ? devMode === 'signup'
+                    ? 'Creating account…'
+                    : devMode === 'reset'
+                      ? 'Sending link…'
+                      : 'Signing in…'
+                  : devMode === 'signup'
+                    ? 'Create account'
+                    : devMode === 'reset'
+                      ? 'Send reset link'
+                      : 'Sign in'}
+              </button>
+
+              {devMode === 'reset' && (
+                <button
+                  type="button"
+                  onClick={() => setDevModeSafe('signin')}
+                  className="btn btn-ghost"
+                  style={{ width: '100%', marginTop: 8, justifyContent: 'center' }}
+                >
+                  Back to sign in
+                </button>
+              )}
+            </form>
+          ) : status === 'sent' ? (
             <div style={{ textAlign: 'center', padding: '8px 0' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📬</div>
               <h3 style={{ color: 'var(--bark)', marginBottom: 8 }}>{t('checkEmail')}</h3>
@@ -147,12 +307,11 @@ function LoginForm() {
                   type="email"
                   placeholder={t('emailPlaceholder')}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoFocus={!enableTestLogin}
                 />
               </div>
-              {status === 'error' && !enableTestLogin && (
+              {status === 'error' && (
                 <p style={{ color: 'var(--clay)', fontSize: '0.85rem', marginBottom: 12 }}>{errorMsg}</p>
               )}
               <button
