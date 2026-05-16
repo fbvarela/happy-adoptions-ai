@@ -1,6 +1,7 @@
 import './globals.css';
 import Script from 'next/script';
 import { Providers } from '@/components/Providers';
+import FloatingChatButton from '@/components/FloatingChatButton';
 
 export const viewport = {
   themeColor: '#3d2b1f',
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
       </head>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
+        <FloatingChatButton />
       </body>
     </html>
   );
